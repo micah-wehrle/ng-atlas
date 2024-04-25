@@ -52,7 +52,7 @@ export class WeTrackItemComponent implements OnInit {
   public onTicketDropdownOptionsClicked(optionClicked: string): void {
     switch(optionClicked) {
       case this.staticTicketDropdownOptions.EDIT:
-        // this.weTrackService.selectedTicket = this.weTrackService.getIndexOfTicket(this.weTrackTicket);
+        this.weTrackService.setSelectedTicket(this.weTrackTicket);
         this.router.navigate(['we-track','edit']);
         break;
       case this.staticTicketDropdownOptions.DELETE:

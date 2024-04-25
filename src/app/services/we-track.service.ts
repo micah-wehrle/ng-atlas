@@ -1,32 +1,33 @@
 import { HttpClient } from '@angular/common/http';
-import { Injectable } from '@angular/core';
-import { environment } from 'src/environments/environment';
+import { Injector, Injectable } from '@angular/core';
+import { WeTrackResponse } from '../models/we-track-response.model';
 import { WeTrackTicket } from '../models/we-track-ticket.model';
+import { ApiService } from './api.service';
 
 @Injectable({
   providedIn: 'root'
 })
-export class WeTrackService {
-  protected databaseUrl = 'localhost:3000/we-track';
-  private tickets: WeTrackTicket[] = []; // Master list of all tickets to be populated when api called
+export class WeTrackService extends ApiService<WeTrackResponse> {
+  protected serverUrl: string = 'http://localhost:3000/we-track';
+  protected apiResultsConstructor: new (response: any) => WeTrackResponse = WeTrackResponse;
+  private selectedTicketId: number = -1;
 
-  constructor(private http: HttpClient) {}
+  constructor(injector: Injector) {
+    super('we track', injector);
+  }
 
-  // TODO remove when merged with abstract service. Placeholders for a method of the abstract class
-  private get(params: string): void {}
-  private post(params: string, options: object): void {}
   // CRUD
 
   public callTickets(): void {
-    this.get(`${this.databaseUrl}/get`);
+    this.get('get');
   }
 
   public createTicket(ticket: WeTrackTicket): void {
-    this.http.post(`${this.databaseUrl}/get`, {test: 'test', 'howdy': 23}).subscribe({next: (response)=>console.log(response)});//, {test: 'testing', "howdy": 5});
+    this.post('create', ticket);
   }
 
-  public updateTicket(ticketId: number, ticket: Partial<WeTrackTicket>): void {
-
+  public updateTicket(partialTicket: Partial<WeTrackTicket>): void {
+    this.post('update', partialTicket);
   }
   
   // I don't think I'm going to implement this. At least not right away.
@@ -35,10 +36,106 @@ export class WeTrackService {
 
 
   public getTickets(): WeTrackTicket[] {
-    return this.tickets.slice();
+    return this.apiResults.getTickets();
   }
 
-  
+  public setSelectedTicket(ticket: WeTrackTicket): void {
+    this.selectedTicketId = ticket.uniqueId;
+  }
+
+  public setSelectedTicketId(id: number): void {
+    this.selectedTicketId = id;
+  }
+
+  public deselectTicket(): void {
+    this.selectedTicketId = -1;
+  }
+
+  public getSelectedTicketId(): number {
+    return this.selectedTicketId;
+  }
+
+  public getSelectedTicket(): WeTrackTicket {
+    return this.apiResults.getTickets().find(ticket => ticket.uniqueId === this.selectedTicketId);
+  }
+
+  public findChangesToSelectedTicket(changedTicket: WeTrackTicket): Partial<WeTrackTicket> {
+    const ticket = this.getSelectedTicket();
+    const outputTicket = structuredClone(changedTicket);
+    for (let key in ticket) {
+      if (key === 'uniqueId') {
+        continue;
+      }
+      if (outputTicket[key] === ticket[key]) {
+        delete outputTicket[key];
+      }
+    }
+
+    return outputTicket;
+  }
+
+  /**
+   * @descriptions Given a ticket or ticket index, will return a numerical value representing where the ticket value should fall in a sorted array. Intended to be used to sort special strings when an order other than alphabetical would make more sense, such as urgency or ticket type.
+   * @param {number | WeTrackTicket} ticket Takes the index of the ticket or the ticket object
+   * @param {string} ticketVariable The ticket variable from which a sortable value is needed
+   * @returns {number} The sortable "weight" of the given ticket value, to be ranked with other possible ticket values
+   */
+  public getSortableValueFromTicket(ticket: number | WeTrackTicket, ticketVariable: string): number {
+    if(!ticket) {
+      console.error('Error parsing ticket'); // In case the user passes an empty ticket
+    }
+    const tickets = this.apiResults.getTickets();
+    const ticketToUse: WeTrackTicket = typeof ticket === 'number' ? tickets[ticket] : ticket; // Convert a variable which may be one of two types, into a definite WeTrackTicket type
+
+    switch(ticketVariable) { // Depending on the weTrackTicket variable type, extract various values or return numerical "weights" depending on the value of the given variable
+      case 'creationDate':
+        return new Date(ticketToUse.creationDate).getTime();
+      case 'editDate':
+        return new Date(ticketToUse.editDate).getTime();
+      case 'type':
+        switch(ticketToUse.type) { // Sort the ticket types in the order Idea > Issue > Feature
+          case WeTrackTicket.STATIC_DATA.TYPE.FEATURE: 
+            return 1;
+          case WeTrackTicket.STATIC_DATA.TYPE.ISSUE: 
+            return 2;
+          case WeTrackTicket.STATIC_DATA.TYPE.IDEA: 
+            return 3;
+        }
+        console.error('Unrecognized ticket type: ', ticketToUse, ticketToUse.type);
+        return 0;
+      case 'importance': 
+        switch(ticketToUse.importance) { // Sort the ticket priorities in the order Urgent > High > Medium > Low
+          case WeTrackTicket.STATIC_DATA.PRIORITY.LOW:
+            return 1;
+          case WeTrackTicket.STATIC_DATA.PRIORITY.MEDIUM:
+            return 2;
+          case WeTrackTicket.STATIC_DATA.PRIORITY.HIGH:
+            return 3;
+          case WeTrackTicket.STATIC_DATA.PRIORITY.URGENT:
+            return 4; 
+        }
+        console.error('Unrecognized ticket priority: ', ticketToUse, ticketToUse.importance);
+        return 0;
+      case 'status':
+        switch(ticketToUse.status) { // Sort the ticket status in the order Cancelled > Complete > In-Progress > Assigned > Pending
+          case WeTrackTicket.STATIC_DATA.STATUS.PENDING:
+            return 1;
+          case WeTrackTicket.STATIC_DATA.STATUS.ASSIGNED:
+            return 2;
+          case WeTrackTicket.STATIC_DATA.STATUS.IN_PROGRESS:
+            return 3;
+          case WeTrackTicket.STATIC_DATA.STATUS.COMPLETE:
+            return 4;
+          case WeTrackTicket.STATIC_DATA.STATUS.CANCELLED:
+            return 5;
+        }
+        console.error('Unrecognized ticket status: ', ticketToUse, ticketToUse.status);
+        return 0;
+      default:
+        console.error('Unrecognized ticket variable: ', ticketVariable);
+        return 0;
+    }
+  }
 
 
 
@@ -178,68 +275,6 @@ export class WeTrackService {
   //       }
   //     });
   //   });
-  // }
-
-  // /**
-  //  * @descriptions Given a ticket or ticket index, will return a numerical value representing where the ticket value should fall in a sorted array. Intended to be used to sort special strings when an order other than alphabetical would make more sense, such as urgency or ticket type.
-  //  * @param {number | WeTrackTicket} ticket Takes the index of the ticket or the ticket object
-  //  * @param {string} ticketVariable The ticket variable from which a sortable value is needed
-  //  * @returns {number} The sortable "weight" of the given ticket value, to be ranked with other possible ticket values
-  //  */
-  // public getSortableValueFromTicket(ticket: number | WeTrackTicket, ticketVariable: string): number {
-  //   if(!ticket) {
-  //     console.error('Error parsing ticket'); // In case the user passes an empty ticket
-  //   }
-  //   let ticketToUse: WeTrackTicket = typeof ticket === 'number' ? this.tickets[ticket] : ticket; // Convert a variable which may be one of two types, into a definite WeTrackTicket type
-
-  //   switch(ticketVariable) { // Depending on the weTrackTicket variable type, extract various values or return numerical "weights" depending on the value of the given variable
-  //     case 'creationDate':
-  //       return new Date(ticketToUse.creationDate).getTime();
-  //     case 'editDate':
-  //       return new Date(ticketToUse.editDate).getTime();
-  //     case 'type':
-  //       switch(ticketToUse.type) { // Sort the ticket types in the order Idea > Issue > Feature
-  //         case WeTrackTicket.STATIC_DATA.TYPE.FEATURE: 
-  //           return 1;
-  //         case WeTrackTicket.STATIC_DATA.TYPE.ISSUE: 
-  //           return 2;
-  //         case WeTrackTicket.STATIC_DATA.TYPE.IDEA: 
-  //           return 3;
-  //       }
-  //       console.error('Unrecognized ticket type: ', ticketToUse, ticketToUse.type);
-  //       return 0;
-  //     case 'importance': 
-  //       switch(ticketToUse.importance) { // Sort the ticket priorities in the order Urgent > High > Medium > Low
-  //         case WeTrackTicket.STATIC_DATA.PRIORITY.LOW:
-  //           return 1;
-  //         case WeTrackTicket.STATIC_DATA.PRIORITY.MEDIUM:
-  //           return 2;
-  //         case WeTrackTicket.STATIC_DATA.PRIORITY.HIGH:
-  //           return 3;
-  //         case WeTrackTicket.STATIC_DATA.PRIORITY.URGENT:
-  //           return 4; 
-  //       }
-  //       console.error('Unrecognized ticket priority: ', ticketToUse, ticketToUse.importance);
-  //       return 0;
-  //     case 'status':
-  //       switch(ticketToUse.status) { // Sort the ticket status in the order Cancelled > Complete > In-Progress > Assigned > Pending
-  //         case WeTrackTicket.STATIC_DATA.STATUS.PENDING:
-  //           return 1;
-  //         case WeTrackTicket.STATIC_DATA.STATUS.ASSIGNED:
-  //           return 2;
-  //         case WeTrackTicket.STATIC_DATA.STATUS.IN_PROGRESS:
-  //           return 3;
-  //         case WeTrackTicket.STATIC_DATA.STATUS.COMPLETE:
-  //           return 4;
-  //         case WeTrackTicket.STATIC_DATA.STATUS.CANCELLED:
-  //           return 5;
-  //       }
-  //       console.error('Unrecognized ticket status: ', ticketToUse, ticketToUse.status);
-  //       return 0;
-  //     default:
-  //       console.error('Unrecognized ticket variable: ', ticketVariable);
-  //       return 0;
-  //   }
   // }
 
   // /**

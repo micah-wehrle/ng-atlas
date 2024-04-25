@@ -49,6 +49,7 @@ export class WeTrackTicket {
   
   constructor(
     // Definite parameters
+    public uniqueId: number,
     public title: string,
     public type: string,
     public description: string,
