@@ -167,13 +167,6 @@ export class WeTrackListComponent implements OnInit, OnDestroy {
     this.currentlyLoadingTickets = true;
     this.weTrackService.callTickets();
     this.subscribeToWeTrack();
-    // this.weTrackService.loadTickets()
-    //   .then((tickets) => {
-    //     this.tickets = tickets;
-    //     this.currentlyLoadingTickets = false;
-    //     this.sortTickets();
-    //   })
-    //   .catch((err) => {console.error(err); this.currentlyLoadingTickets = false; });
   }
 
   private subscribeToWeTrack(): void {
@@ -202,12 +195,6 @@ export class WeTrackListComponent implements OnInit, OnDestroy {
       ['Micah', 'Aaron', 'Kerry', 'Raul', 'Someone else', 'Another person'][Math.floor(Math.random()*6)],
     );
     tempTicket.status = ['pending', 'in-progress', 'complete', 'cancelled', 'assigned'][Math.floor(Math.random()*5)];
-    // this.weTrackService.addNewTicket(tempTicket)
-    //   .then((tickets) => { 
-    //     this.tickets = tickets; 
-    //     this.sortTickets();
-    //   })
-    //   .catch((err) => { console.error(err); });
   }
 
   /**
@@ -216,11 +203,9 @@ export class WeTrackListComponent implements OnInit, OnDestroy {
    * @returns {void}
    */
   public deleteTicket(ticket: WeTrackTicket): void {
-    // this.weTrackService.deleteTicket(ticket)
-    //   .then((tickets) => { 
-    //     this.tickets = tickets;
-    //     this.sortTickets();
-    //   });
+    this.weTrackService.deleteTicket(ticket.uniqueId);
+    this.currentlyLoadingTickets = true;
+    this.subscribeToWeTrack();
   }
 
   /**
@@ -230,29 +215,4 @@ export class WeTrackListComponent implements OnInit, OnDestroy {
   public onNewTicket(): void {
     this.router.navigate(['we-track','new']);
   }
-
-  // I spent some time making this sorting method, but then realized there's literally a prototype method in arrays to sort them. Leaving it here as a memory until I get over it and delete it.
-  // private sortTicketsAscending(ticketKey: string) {
-  //   // I think this is a bubble sort
-
-  //   this.orderedTickets = [...this.tickets];
-
-  //   let madeOrderSwap = true;
-
-  //   while(madeOrderSwap) {
-  //     madeOrderSwap = false;
-
-  //     for(let i = 0; i < this.orderedTickets.length-1; i++) {
-  //       let curTicketValue = this.weTrackService.getSortableValueFromTicket(this.orderedTickets[i], ticketKey);
-  //       let nextTicketValue = this.weTrackService.getSortableValueFromTicket(this.orderedTickets[i+1], ticketKey);
-        
-  //       if(curTicketValue > nextTicketValue) {
-  //         let tempTicket = {...this.orderedTickets[i]};
-  //         this.orderedTickets[i] = {...this.orderedTickets[i+1]};
-  //         this.orderedTickets[i+1] = tempTicket;
-  //         madeOrderSwap = true;
-  //       }
-  //     }
-  //   }
-  // }
 }

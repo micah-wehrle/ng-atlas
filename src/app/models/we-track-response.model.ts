@@ -14,9 +14,10 @@ export class WeTrackResponse extends ApiResponseModel {
    * @param response - The response from the api, passed here to be parsed
    * @returns {void}
    */
-  protected processResponse(response: {tickets: WeTrackTicket[]}): void {
+  protected processResponse(response: {tickets: {[key: string]: WeTrackTicket}}): void {
+    const extractedTickets = Object.values(response.tickets);
     this.tickets = [];
-    for (let ticket of response.tickets) {
+    for (let ticket of extractedTickets) {
       this.tickets.push(
         new WeTrackTicket(
           ticket.uniqueId,

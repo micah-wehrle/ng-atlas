@@ -30,8 +30,9 @@ export class WeTrackService extends ApiService<WeTrackResponse> {
     this.post('update', partialTicket);
   }
   
-  // I don't think I'm going to implement this. At least not right away.
-  public deleteTicket(ticketId: number): void {}
+  public deleteTicket(ticketId: number): void {
+    this.post('delete', { ticketId });
+  }
 
 
 
