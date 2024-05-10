@@ -1,0 +1,100 @@
+{
+  "we-track": {
+    "1": {
+      "assignee": "",
+      "creationDate": "2024-03-26T00:00:00.000Z",
+      "description": "Create a view, accessed by the sidebar menu, which displays info about all of our api service files. When a servici",
+      "editDate": "2024-04-26T00:53:51.061Z",
+      "importance": "low",
+      "status": "pending",
+      "submitter": "Micah",
+      "title": "Api Monitor Page",
+      "type": "feature",
+      "uniqueId": 1
+    },
+    "2": {
+      "assignee": "Micah",
+      "creationDate": "2024-04-02T00:00:00.000Z",
+      "description": "Create weTrack on the band and front ends so that when any user loads the weTrack page they can have access to all the current tickets.",
+      "editDate": "2024-04-26T00:29:35.115Z",
+      "importance": "high",
+      "status": "assigned",
+      "submitter": "Micah",
+      "title": "Finish weTrack",
+      "type": "feature",
+      "uniqueId": 2
+    },
+    "1714013152084": {
+      "assignee": "Chris",
+      "creationDate": "2024-04-20T00:00:00.000Z",
+      "description": "Safety expectations for technicians are always changing, and so it would be beneficial for technicians to be notified when a change is made. This feature would include an alert system to notify the technician when a new safety update has been made.",
+      "editDate": "2024-05-09T02:04:51.023Z",
+      "importance": "medium",
+      "status": "in-progress",
+      "submitter": "Chris",
+      "title": "Safety Updates",
+      "type": "feature",
+      "uniqueId": 1714013152084
+    },
+    "1714092944597": {
+      "assignee": "Brandon",
+      "creationDate": "2024-04-01T00:00:00.000Z",
+      "description": "Helps managers keep track of pre-install drop work.",
+      "editDate": "2024-05-09T02:17:46.683Z",
+      "importance": "high",
+      "status": "cancelled",
+      "submitter": "Brandon",
+      "title": "Expert Path Finder Tracker",
+      "type": "idea",
+      "uniqueId": 1714092944597
+    },
+    "1715218909385": {
+      "assignee": "",
+      "creationDate": "2024-05-09T00:00:00.000Z",
+      "description": "The current vertical flow, specifically for expert path, could use some improvements. May be beneficial to research how the data is passed into the current setup, so that some vertical flows (like RRs) don't need to be modified. Should have better step nesting and better navigation between steps.",
+      "editDate": "2024-05-09T01:59:04.864Z",
+      "importance": "low",
+      "status": "pending",
+      "submitter": "Micah",
+      "title": "Redesign Vertical Flow",
+      "type": "feature",
+      "uniqueId": 1715218909385
+    },
+    "1715219979394": {
+      "assignee": "",
+      "comments": {
+        "1715223642255": {
+          "comment": "Testing, hello earth",
+          "date": 1715223642255,
+          "name": "Micah"
+        },
+        "1715226104289": {
+          "comment": "Hey looks like it's working!",
+          "date": 1715226104289,
+          "name": "Brandon"
+        }
+      },
+      "creationDate": "2024-05-09T01:59:39.394Z",
+      "description": "123",
+      "editDate": "2024-05-09T01:59:39.394Z",
+      "importance": "low",
+      "status": "pending",
+      "submitter": "Micah",
+      "title": "Junk",
+      "type": "feature",
+      "uniqueId": 1715219979394
+    },
+    "1715220507293": {
+      "assignee": "",
+      "creationDate": "2024-05-09T02:08:27.293Z",
+      "description": "The weather service is run entirely on the front end. In order to move to the back end, we need to decide if the weather alerts are included with the ticket data (may not be a good idea) or if they're just on-demand from the front end. \n\nWe could do a sort of hybrid of both, where the back end when generating a list of tickets will find the weather alerts for the first ticket. We should also look into storing weather alert data (semi permanently? so at least it will persist between server restarts while developing) so that it isn't being called constantly. Then if the user opens a ticket for which they don't have weather data, they can then request it from the back end.",
+      "editDate": "2024-05-09T02:08:27.293Z",
+      "importance": "low",
+      "status": "pending",
+      "submitter": "Micah",
+      "title": "Weather to Back End",
+      "type": "issue",
+      "uniqueId": 1715220507293
+    }
+  }
+}
