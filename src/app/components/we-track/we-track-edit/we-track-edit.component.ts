@@ -63,7 +63,7 @@ export class WeTrackEditComponent implements OnInit {
       }
       else { // If the user is on the edit page, and has a ticket selected in the weTrackService..
         const selTicket: WeTrackTicket = this.weTrackService.getSelectedTicket(); // retrieve the selected ticket from weTrackService
-        console.log(selTicket);
+        
         this.weTrackForm.patchValue(selTicket ? { // update all the values of the FormGroup to the data retrieved from selected ticket
           'title': selTicket.title ? selTicket.title : '',
           'type': selTicket.type ? selTicket.type : '',

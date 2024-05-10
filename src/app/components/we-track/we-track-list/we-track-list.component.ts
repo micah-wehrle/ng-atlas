@@ -205,7 +205,15 @@ export class WeTrackListComponent implements OnInit, OnDestroy {
   public deleteTicket(ticket: WeTrackTicket): void {
     this.weTrackService.deleteTicket(ticket.uniqueId);
     this.currentlyLoadingTickets = true;
-    this.subscribeToWeTrack();
+
+    this.weTrackService.getLoading().pipe(take(2), takeUntil(this.ngUnsubscribe)).subscribe({
+      next: (loading: boolean) => {
+        if (!loading && this.weTrackService.hasSuccessfullyCompleted()) {
+          this.tickets = null;
+          this.onRefreshTickets();
+        }
+      }
+    })
   }
 
   /**

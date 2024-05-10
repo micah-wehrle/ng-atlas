@@ -1,7 +1,7 @@
 import { HttpClient } from '@angular/common/http';
 import { Injector, Injectable } from '@angular/core';
 import { WeTrackResponse } from '../models/we-track-response.model';
-import { WeTrackTicket } from '../models/we-track-ticket.model';
+import { Comment, WeTrackTicket } from '../models/we-track-ticket.model';
 import { ApiService } from './api.service';
 
 @Injectable({
@@ -32,6 +32,10 @@ export class WeTrackService extends ApiService<WeTrackResponse> {
   
   public deleteTicket(ticketId: number): void {
     this.post('delete', { ticketId });
+  }
+
+  public addComment(ticketId: number, comment: Comment): void {
+    this.post('comment', {ticketId, comment});
   }
 
 

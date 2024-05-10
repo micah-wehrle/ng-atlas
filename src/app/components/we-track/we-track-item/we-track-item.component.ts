@@ -1,7 +1,7 @@
 import { Component, EventEmitter, Input, OnInit, Output } from '@angular/core';
 import { Router } from '@angular/router';
 
-import { WeTrackTicket } from 'src/app/models/we-track-ticket.model';
+import { Comment, WeTrackTicket } from 'src/app/models/we-track-ticket.model';
 import { WeTrackService } from 'src/app/services/we-track.service';
 
 @Component({
@@ -23,6 +23,8 @@ export class WeTrackItemComponent implements OnInit {
   public commentName: string = ''; // Form data from commenter name (may be replaced if we move to login-based interaction)
   public commentText: string = ''; // Form data for comment text
 
+  public comments: Comment[] = [];
+
   public ellipsesStyleWrap: object = { // for ngStyle use on the description, to hide overflow when the ticket is collapsed. 
     'text-overflow': 'ellipsis', // Where should this go? Entirely in the HTML? Maybe create a class? -Micah
     'overflow' : 'hidden',
@@ -43,6 +45,10 @@ export class WeTrackItemComponent implements OnInit {
     let tempPrettyDate = new Date(this.weTrackTicket.creationDate).toISOString().slice(0,10); // Convert Date string to MM-DD-YYY
     this.prettyCreationDate = tempPrettyDate.slice(5,10) + '-' + tempPrettyDate.slice(0,4);
     this.prettyCreationDate = `${tempPrettyDate.slice(5,10)}-${tempPrettyDate.slice(0,4)}`;
+
+    for (let key in this.weTrackTicket.comments) {
+      this.comments.push(this.weTrackTicket.comments[key]);
+    }
   }
   
   /**
@@ -115,21 +121,15 @@ export class WeTrackItemComponent implements OnInit {
    * @description When the user clicks comment, will prepare the comment, add it to the current ticket, and attempt to send it to the database.
    */
   public onSubmitComment(): void {
-    
-    // if(this.commentName.trim() === '' || this.commentText.trim() === '') { return; }
-    // let updatedTicketPayload = {...this.weTrackTicket};
-    // if(!Array.isArray(updatedTicketPayload.comments) || updatedTicketPayload.comments.length === 0) {
-    //   updatedTicketPayload.comments = [{name: this.commentName, comment: this.commentText, date: new Date()}];
-    // }
-    // else {
-    //   updatedTicketPayload.comments.push({name: this.commentName, comment: this.commentText, date: new Date()});
-    // }
-    // this.commentText = '';
 
-    // this.weTrackService.updateTicket(updatedTicketPayload, this.weTrackTicketIndex)
-    //   .then(() => {
-    //     this.weTrackTicket = updatedTicketPayload;
-    //   });
+    if(this.commentName.trim() === '' || this.commentText.trim() === '') { return; }
+
+    this.weTrackService.addComment(this.weTrackTicket.uniqueId, {
+      name: this.commentName.trim(),
+      comment: this.commentText.trim(),
+      date: new Date().getTime(),
+      reply: []
+    });
   }
 
   /**
@@ -137,8 +137,8 @@ export class WeTrackItemComponent implements OnInit {
    * @param {number} index The index of the comment, as given by the ngFor loop
    */
   public deleteComment(index: number): void {
-    let updatedTicketPayload = {...this.weTrackTicket};
-    updatedTicketPayload.comments.splice(index, 1);
+    // let updatedTicketPayload = {...this.weTrackTicket};
+    // updatedTicketPayload.comments.splice(index, 1);
 
     // this.weTrackService.updateTicket(updatedTicketPayload, this.weTrackTicketIndex)
     //   .then(() => {

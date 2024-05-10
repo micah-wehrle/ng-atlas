@@ -46,13 +46,13 @@
         </div>
       </div>
       <div class="row mt-2">
-        <div class="col" [ngStyle]="weTrackTicket.comments && weTrackTicket.comments.length > 0 ? {} : {'color': '#999'}">
-          Comments ({{ weTrackTicket && weTrackTicket.comments ? weTrackTicket.comments.length : 0 }}) <span *ngIf="weTrackTicket?.comments && weTrackTicket.comments.length > 0" class="last-commenter"> - Last by {{ weTrackTicket.comments[weTrackTicket.comments.length - 1].name }}</span>
+        <div class="col" [ngStyle]="comments && comments.length > 0 ? {} : {'color': '#999'}">
+          Comments ({{ comments ? comments.length : 0 }}) <span *ngIf="comments && comments.length > 0" class="last-commenter"> - Last by {{ comments[comments.length - 1].name }}</span>
         </div>
       </div>
       <ng-container *ngIf="isActive">
         <hr>
-        <ng-container *ngFor="let comment of weTrackTicket.comments; let i = index">
+        <ng-container *ngFor="let comment of comments; let i = index">
           <app-we-track-comment [comment]="comment" (deleteSelf)="deleteComment(i)"></app-we-track-comment>
         </ng-container>
         <div class="">
