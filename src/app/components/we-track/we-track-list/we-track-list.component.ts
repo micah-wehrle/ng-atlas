@@ -1,5 +1,6 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnDestroy, OnInit } from '@angular/core';
 import { Router } from '@angular/router';
+import { Subject, take, takeUntil } from 'rxjs';
 
 import { WeTrackTicket } from 'src/app/models/we-track-ticket.model';
 import { WeTrackService } from 'src/app/services/we-track.service';
@@ -9,9 +10,10 @@ import { WeTrackService } from 'src/app/services/we-track.service';
   templateUrl: './we-track-list.component.html',
   styleUrls: ['./we-track-list.component.scss']
 })
-export class WeTrackListComponent implements OnInit {
+export class WeTrackListComponent implements OnInit, OnDestroy {
   public tickets: WeTrackTicket[] = []; // Defaults to empty, will be populated in ngOnInit
   public orderedTickets: WeTrackTicket[] = this.tickets.slice(); // A copy of the default ticket list (will be initialized as empty)
+  private ngUnsubscribe: Subject<void> = new Subject<void>();
 
   public sortOrder: number = -1; // Should always be either 1 or -1. Changing to 1 or -1 will invert the sorting order of the orderedTickets array, as is used in the Array.sort() method
 
@@ -41,10 +43,15 @@ export class WeTrackListComponent implements OnInit {
   public selectedSorting: string = this.staticSortingDropdownOptions.DATE; // Default sorting start, set to date.
   public currentlyLoadingTickets: boolean = true; // For hiding the main list in the DOM and instead showing a loading indicator. By default, nothing is loaded, so loading = true
 
-  constructor(private weTrackService: WeTrackService, private router: Router) { }
+  constructor(private weTrackService: WeTrackService, private router: Router) {}
 
   ngOnInit(): void {
-    setTimeout(() => this.onRefreshTickets(), 100); // Initialize tickets from the database. Had to add delay as sometimes calling the loadTickets method was returning an old version of the ticket array from the database. I think this happened when I would write to the database and then immediately request an updated list.
+    this.onRefreshTickets();
+  }
+
+  ngOnDestroy(): void {
+    this.ngUnsubscribe.next();
+    this.ngUnsubscribe.complete();
   }
 
   // -----    Ticket Sorting    -----
@@ -70,6 +77,7 @@ export class WeTrackListComponent implements OnInit {
 
   /**
    * @description Clones the master list of tickets, removes tickets based on filter settings, and then sorts the remaining array based on selectedSorting global variable
+   * @returns {void}
    */
   public sortTickets(): void {
     this.orderedTickets = this.tickets.slice(); // Create a copy so we don't mess up the master list
@@ -82,7 +90,7 @@ export class WeTrackListComponent implements OnInit {
         this.numberOfActiveFilters++;
       }
     }
-    
+
     // Depending on the sorting type, call the Array.sort prototype method with the specified sorting procedure
     switch(this.selectedSorting) {
       case this.staticSortingDropdownOptions.DATE: // Sort by date
@@ -112,6 +120,7 @@ export class WeTrackListComponent implements OnInit {
 
   /**
    * @description Loop through each filter type, and remove any tickets from the orderedTickets array that don't fit the filter parameters
+   * @returns {void}
    */
   private applyTicketFilters(): void {
     const filterTypes = Object.keys(this.ticketFilters); // retrieve an array of filter types from the ticketFilters object
@@ -135,6 +144,7 @@ export class WeTrackListComponent implements OnInit {
 
   /**
    * @description Used in the DOM to set all filters to 'All' and re-initialize the universal filter components so they reset to default ('All')
+   * @returns {void}
    */
   public onClearFilters(): void {
     for(let key of Object.keys(this.ticketFilters)) {
@@ -153,21 +163,37 @@ export class WeTrackListComponent implements OnInit {
    */
   public onRefreshTickets(): void {
     this.currentlyLoadingTickets = true;
-    this.weTrackService.loadTickets()
-      .then((tickets) => {
-        this.tickets = tickets;
-        this.currentlyLoadingTickets = false;
-        this.sortTickets();
-      })
-      .catch((err) => {console.error(err); this.currentlyLoadingTickets = false; });
+    this.weTrackService.callTickets();
+    this.subscribeToWeTrack();
+  }
+
+  /**
+   * @description Subscribes to the weTrack service, and processes the tickets after being received from the back end.
+   * @returns {void}
+   */
+  private subscribeToWeTrack(): void {
+    this.weTrackService.getLoading().pipe(take(2), takeUntil(this.ngUnsubscribe)).subscribe({
+      next: (loading: boolean) => {
+        if (!loading && this.weTrackService.hasSuccessfullyCompleted()) {
+          this.tickets = this.weTrackService.getTickets();
+          this.currentlyLoadingTickets = false;
+          this.sortTickets();
+        }
+      },
+      error: (err: any) => {
+        console.log(err);
+      }
+    });
   }
 
   /**
    * @description Temporary method, allows for randomly generating a ticket for testing purposes.
+   * @returns {void}
    */
   public onGenTicket(): void {
     // temporary way to add new tickets
     let tempTicket = new WeTrackTicket(
+      new Date().getTime(),
       ['Add a nice feature', 'Make this thing work', 'Do something cool', 'Work together :)', 'Reach for the stars', 'Achieve your dreams'][Math.floor(Math.random()*6)] + ' (generated)',
       ['issue','feature'][Math.round(Math.random())],
       'Blah blah blah this is a description',
@@ -175,12 +201,6 @@ export class WeTrackListComponent implements OnInit {
       ['Micah', 'Aaron', 'Kerry', 'Raul', 'Someone else', 'Another person'][Math.floor(Math.random()*6)],
     );
     tempTicket.status = ['pending', 'in-progress', 'complete', 'cancelled', 'assigned'][Math.floor(Math.random()*5)];
-    this.weTrackService.addNewTicket(tempTicket)
-      .then((tickets) => { 
-        this.tickets = tickets; 
-        this.sortTickets();
-      })
-      .catch((err) => { console.error(err); });
   }
 
   /**
@@ -189,11 +209,17 @@ export class WeTrackListComponent implements OnInit {
    * @returns {void}
    */
   public deleteTicket(ticket: WeTrackTicket): void {
-    this.weTrackService.deleteTicket(ticket)
-      .then((tickets) => { 
-        this.tickets = tickets;
-        this.sortTickets();
-      });
+    this.weTrackService.deleteTicket(ticket.uniqueId, true);
+    this.currentlyLoadingTickets = true;
+
+    this.weTrackService.getLoading().pipe(take(2), takeUntil(this.ngUnsubscribe)).subscribe({
+      next: (loading: boolean) => {
+        if (!loading && this.weTrackService.hasSuccessfullyCompleted()) {
+          this.tickets = null;
+          this.onRefreshTickets();
+        }
+      }
+    })
   }
 
   /**
@@ -204,28 +230,11 @@ export class WeTrackListComponent implements OnInit {
     this.router.navigate(['we-track','new']);
   }
 
-  // I spent some time making this sorting method, but then realized there's literally a prototype method in arrays to sort them. Leaving it here as a memory until I get over it and delete it.
-  // private sortTicketsAscending(ticketKey: string) {
-  //   // I think this is a bubble sort
-
-  //   this.orderedTickets = [...this.tickets];
-
-  //   let madeOrderSwap = true;
-
-  //   while(madeOrderSwap) {
-  //     madeOrderSwap = false;
-
-  //     for(let i = 0; i < this.orderedTickets.length-1; i++) {
-  //       let curTicketValue = this.weTrackService.getSortableValueFromTicket(this.orderedTickets[i], ticketKey);
-  //       let nextTicketValue = this.weTrackService.getSortableValueFromTicket(this.orderedTickets[i+1], ticketKey);
-        
-  //       if(curTicketValue > nextTicketValue) {
-  //         let tempTicket = {...this.orderedTickets[i]};
-  //         this.orderedTickets[i] = {...this.orderedTickets[i+1]};
-  //         this.orderedTickets[i+1] = tempTicket;
-  //         madeOrderSwap = true;
-  //       }
-  //     }
-  //   }
-  // }
+  /**
+   * @description Routes to the settings page
+   * @returns {void}
+   */
+  public onSettings(): void {
+    this.router.navigate(['we-track', 'settings']);
+  }
 }

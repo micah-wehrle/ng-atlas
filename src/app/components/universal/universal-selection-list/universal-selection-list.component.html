@@ -1,0 +1,11 @@
+<ng-container *ngIf="listData?.topText">
+  <h6>{{ listData?.topText }}</h6>
+</ng-container>
+<div class="list-group mb-2">
+  <ng-container *ngFor="let element of listData?.listElements; let i = index">
+    <div class="list-group-item" [ngClass]="{'active': selectedElements[i]}" style="border-color:lightgray" (click)="onSelectElement(i)"> {{ element.text }} </div>
+  </ng-container>
+</div>
+<ng-container *ngFor="let button of listData?.buttons">
+  <button [class]="['btn', button.bootstrapButtonClass]" (click)="button.callback(findSelectedElementsForCallback())"> {{ button.text }} </button>
+</ng-container>

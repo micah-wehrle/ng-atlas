@@ -22,6 +22,7 @@ export abstract class ApiResponseModel {
     catch (e) {
       this.flowStatus = 'FAILURE';
       this.flowStatusMessage = e.message;
+      console.log(e);
     }
   }
 

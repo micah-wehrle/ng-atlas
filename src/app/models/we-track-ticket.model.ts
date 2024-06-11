@@ -24,7 +24,7 @@ export class WeTrackTicket {
     TAGS: {
       
     }
-  }
+  };
   
   public static readonly TYPE = {
     FEATURE: 'feature',
@@ -38,17 +38,18 @@ export class WeTrackTicket {
     IN_PROGRESS: 'in-progress',
     COMPLETE: 'complete',
     CANCELLED: 'cancelled',
-  }
+  };
 
   public static PRIORITY = {
     LOW: 'low',
     MEDIUM: 'medium',
     HIGH: 'high',
     URGENT: 'urgent',
-  }
+  };
   
   constructor(
     // Definite parameters
+    public uniqueId: number,
     public title: string,
     public type: string,
     public description: string,
@@ -60,7 +61,7 @@ export class WeTrackTicket {
     public status: string = WeTrackTicket.STATIC_DATA.STATUS.PENDING,
     public creationDate: Date = new Date(),
     public editDate: Date = new Date(),
-    public comments: Comment[] = [],
+    public comments: {[key: string]: Comment} = {},
     public tags: string[] = [],
   ) {}
 }
@@ -68,5 +69,8 @@ export class WeTrackTicket {
 export interface Comment {
   name: string,
   comment: string,
-  date: Date,
+  date: number,
+  reply: Reply[]
 }
+
+export interface Reply extends Omit<Comment, 'reply'> {} 
