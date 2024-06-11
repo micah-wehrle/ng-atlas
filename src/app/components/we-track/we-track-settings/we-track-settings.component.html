@@ -1,0 +1,19 @@
+<div class="container">
+  <button type="button" class="btn btn-secondary mb-1" (click)="onGoBack()">&lt; Back</button>&nbsp;
+  <div class="row mt-2">
+    <app-universal-expandable-card [headerData]="headerData">
+      <!-- Internal HTML for the expandable card  -->
+      <ng-container *ngIf="!isLoadingDeletedTickets; else loading">
+        <ng-container *ngIf="getIfThereAreDeletedTickets(); else noTickets">
+          <app-universal-selection-list [listData]="deletedTicketData"></app-universal-selection-list>
+        </ng-container>
+        <ng-template #noTickets>
+          <div class="deleted-ticket-note">No Deleted Tickets.</div>
+        </ng-template>
+      </ng-container>
+      <ng-template #loading>
+        <div class="deleted-ticket-note">Loading . . .</div>
+      </ng-template>
+    </app-universal-expandable-card>
+  </div>
+</div>

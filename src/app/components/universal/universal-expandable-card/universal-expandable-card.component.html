@@ -1,0 +1,18 @@
+<div class="card">
+  <h5 class="card-header" (click)="onHeaderClick()" [ngStyle]="headerData.style" data-bs-toggle="collapse" data-bs-target="#cardBody" aria-expanded="false" aria-controls="cardBody">
+    <div class="row">
+      <div class="col-auto me-auto">
+        {{ headerData.text }}
+      </div>
+      <div *ngIf="headerData.showArrow" class="col-auto">
+        <div [ngClass]="{'arrow-normal': !isOpen, 'arrow-rotated': isOpen}">&lt;</div>
+      </div>
+    </div>
+  </h5>
+  <!-- Can probably read the class of this one to tell if it's collapsed -->
+  <div class="collapse" id="cardBody" (shown.bs.collapse)="onCardShown()" (hidden.bs.collapse)="onCardHidden()">
+    <div class="card-body">
+      <ng-content></ng-content>
+    </div>
+  </div>
+</div>
