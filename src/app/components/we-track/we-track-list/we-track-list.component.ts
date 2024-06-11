@@ -43,12 +43,7 @@ export class WeTrackListComponent implements OnInit, OnDestroy {
   public selectedSorting: string = this.staticSortingDropdownOptions.DATE; // Default sorting start, set to date.
   public currentlyLoadingTickets: boolean = true; // For hiding the main list in the DOM and instead showing a loading indicator. By default, nothing is loaded, so loading = true
 
-  constructor(private weTrackService: WeTrackService, private router: Router) {
-    //this.tickets = weTrackService.getTickets();
-    //this.currentlyLoadingTickets = false;
-    //this.sortTickets();
-
-  }
+  constructor(private weTrackService: WeTrackService, private router: Router) {}
 
   ngOnInit(): void {
     this.onRefreshTickets();
@@ -82,6 +77,7 @@ export class WeTrackListComponent implements OnInit, OnDestroy {
 
   /**
    * @description Clones the master list of tickets, removes tickets based on filter settings, and then sorts the remaining array based on selectedSorting global variable
+   * @returns {void}
    */
   public sortTickets(): void {
     this.orderedTickets = this.tickets.slice(); // Create a copy so we don't mess up the master list
@@ -124,6 +120,7 @@ export class WeTrackListComponent implements OnInit, OnDestroy {
 
   /**
    * @description Loop through each filter type, and remove any tickets from the orderedTickets array that don't fit the filter parameters
+   * @returns {void}
    */
   private applyTicketFilters(): void {
     const filterTypes = Object.keys(this.ticketFilters); // retrieve an array of filter types from the ticketFilters object
@@ -147,6 +144,7 @@ export class WeTrackListComponent implements OnInit, OnDestroy {
 
   /**
    * @description Used in the DOM to set all filters to 'All' and re-initialize the universal filter components so they reset to default ('All')
+   * @returns {void}
    */
   public onClearFilters(): void {
     for(let key of Object.keys(this.ticketFilters)) {
@@ -169,6 +167,10 @@ export class WeTrackListComponent implements OnInit, OnDestroy {
     this.subscribeToWeTrack();
   }
 
+  /**
+   * @description Subscribes to the weTrack service, and processes the tickets after being received from the back end.
+   * @returns {void}
+   */
   private subscribeToWeTrack(): void {
     this.weTrackService.getLoading().pipe(take(2), takeUntil(this.ngUnsubscribe)).subscribe({
       next: (loading: boolean) => {
@@ -177,12 +179,16 @@ export class WeTrackListComponent implements OnInit, OnDestroy {
           this.currentlyLoadingTickets = false;
           this.sortTickets();
         }
+      },
+      error: (err: any) => {
+        console.log(err);
       }
-    })
+    });
   }
 
   /**
    * @description Temporary method, allows for randomly generating a ticket for testing purposes.
+   * @returns {void}
    */
   public onGenTicket(): void {
     // temporary way to add new tickets
@@ -203,7 +209,7 @@ export class WeTrackListComponent implements OnInit, OnDestroy {
    * @returns {void}
    */
   public deleteTicket(ticket: WeTrackTicket): void {
-    this.weTrackService.deleteTicket(ticket.uniqueId);
+    this.weTrackService.deleteTicket(ticket.uniqueId, true);
     this.currentlyLoadingTickets = true;
 
     this.weTrackService.getLoading().pipe(take(2), takeUntil(this.ngUnsubscribe)).subscribe({
@@ -223,6 +229,12 @@ export class WeTrackListComponent implements OnInit, OnDestroy {
   public onNewTicket(): void {
     this.router.navigate(['we-track','new']);
   }
-}
 
-// Test
+  /**
+   * @description Routes to the settings page
+   * @returns {void}
+   */
+  public onSettings(): void {
+    this.router.navigate(['we-track', 'settings']);
+  }
+}
