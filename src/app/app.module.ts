@@ -36,6 +36,7 @@ import { TestsSubviewComponent } from './components/views/job-view/subviews/test
 import { UniversalFacilitiesCardComponent } from './components/universal/universal-facilities-card/universal-facilities-card.component';
 import { WeatherViewComponent } from './components/views/weather-view/weather-view.component';
 import { SidebarListComponent } from './components/header/sidebar-list/sidebar-list.component';
+import { JobListCardComponent } from './components/job-list/job-list-card/job-list-card.component';
 
 @NgModule({
   declarations: [
@@ -69,7 +70,8 @@ import { SidebarListComponent } from './components/header/sidebar-list/sidebar-l
     TestsSubviewComponent,
     UniversalFacilitiesCardComponent,
     WeatherViewComponent,
-    SidebarListComponent
+    SidebarListComponent,
+    JobListCardComponent
   ],
   imports: [
     BrowserModule,

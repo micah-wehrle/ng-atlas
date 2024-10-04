@@ -11,22 +11,7 @@
   </ng-container>
   <ng-container *ngSwitchCase="'completed'">
     <ng-container *ngFor="let job of jobsResponse?.getJobs(); let i = index">
-      <div class="card end-0 mb-2" (click)="onJobClicked(job)"> 
-        <div class="row">
-          <div class="col-3 text-center pt-3 ps-4 text-light" [ngStyle]=" {'background-color': job?.jobTypeColor}">
-            <p>JOB</p>
-            <p>{{ i+1 }}</p>
-            <p class="mt-5 smaller-text">{{job?.transportType}}</p>
-          </div>
-          <div class="col-9">
-            <p>ID: {{ job?.accountNumber }}</p>
-            <h5>{{ job?.jobType }}</h5>
-            <p>Appt: {{ job?.appointment }}</p>
-            <span>{{ job?.location?.streetAddress }}</span>
-            <p>{{ job?.location?.city }}, {{ job?.location?.state }} {{ job?.location?.zip }}</p>
-          </div>
-        </div>
-      </div>
+      <app-job-list-card [job]="job" [i]="i" (click)="onJobClicked(job)"></app-job-list-card>
     </ng-container> 
   </ng-container>
 </ng-container>
