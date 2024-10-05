@@ -29,14 +29,32 @@ export class WeTrackSettingsComponent implements OnInit, OnDestroy {
     buttons: [
       {
         bootstrapButtonClass: 'btn-primary',
+        text: 'View',
+        callback: (selectedElements: number[]) => {
+          if (selectedElements.length === 1) {
+            // this.displayTicket(selectedElements[0]);
+          }
+        }
+      },
+      {
+        bootstrapButtonClass: 'btn-success',
         text: 'Restore',
         callback: (selectedElements: number[]) => {
           if (selectedElements.length === 1) {
-            this.deletedTicketData.listElements = []; // hide array of tickets
+            // this.deletedTicketData.listElements = []; // hide array of tickets
             this.restoreTicket(selectedElements[0]);
           }
         }
       },
+      {
+        bootstrapButtonClass: 'btn-danger',
+        text: 'Permanently Delete',
+        callback: (selectedElements: number[]) => {
+          if (selectedElements.length === 1) {
+            this.deleteTicket(selectedElements[0]);
+          }
+        }
+      }
     ],
   };
 
@@ -122,6 +140,10 @@ export class WeTrackSettingsComponent implements OnInit, OnDestroy {
         }
       }
     });
+  }
+
+  private deleteTicket(uniqueId: number): void {
+    this.weTrackService.permanentlyDeleteTicket(uniqueId);
   }
 
   /**

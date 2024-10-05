@@ -15,7 +15,8 @@ export class WeTrackItemComponent implements OnInit {
   @Input() weTrackTicket: WeTrackTicket;
   // Emission to we-track-list when the user wants to delete this ticket from the database.
   @Output() deleteThisTicket: EventEmitter<void> = new EventEmitter<void>(); // An alternative to this would be to have the ticket delete itself from the database. However, this would require all of the places that use the master ticket array to subscribe to the service in order to be notified when the master list changes. -Micah
-  
+  @Output() deleteThisTicketComment: EventEmitter<Comment> = new EventEmitter<Comment>();
+
   public isActive: boolean = false; // When the ticket is open in the list, showing the full description and all data
   public statusColor: string = ''; // For use with the stylized dot class next to the ticket status. See global style sheet for class info
   public prettyCreationDate: string = ''; // Shows creation date in MM-DD-YYYY format
@@ -134,16 +135,10 @@ export class WeTrackItemComponent implements OnInit {
 
   /**
    * @description Will remove the comment from the ticket, and attempt to send the updated data to the database.
-   * @param {number} index The index of the comment, as given by the ngFor loop
+   * @param {Comment} comment The comment being deleted
    */
-  public deleteComment(index: number): void {
-    // let updatedTicketPayload = {...this.weTrackTicket};
-    // updatedTicketPayload.comments.splice(index, 1);
-
-    // this.weTrackService.updateTicket(updatedTicketPayload, this.weTrackTicketIndex)
-    //   .then(() => {
-    //     this.weTrackTicket = updatedTicketPayload;
-    //   });
+  public deleteComment(comment: Comment): void {
+    this.deleteThisTicketComment.next(comment);
   }
 
   public stopPropagation(event: Event): void {

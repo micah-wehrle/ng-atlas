@@ -10,6 +10,7 @@ export class UniversalSelectionListComponent implements OnInit {
   @Input() listData: ListData;
 
   public selectedElements: boolean[] = [];
+  public buttonsEnabled: boolean = false;
 
   constructor() { }
 
@@ -47,6 +48,18 @@ export class UniversalSelectionListComponent implements OnInit {
     }
     this.selectedElements[index] = !this.selectedElements[index];
 
+    this.updateButtons();
+  }
+
+  private updateButtons(): void {
+    for (let i = 0; i < this.selectedElements.length; i++) {
+      if (this.selectedElements[i]) {
+        this.buttonsEnabled = true;
+        return;
+      }
+    }
+
+    this.buttonsEnabled = false;
   }
 
 }

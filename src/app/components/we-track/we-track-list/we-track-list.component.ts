@@ -4,6 +4,7 @@ import { Subject, take, takeUntil } from 'rxjs';
 
 import { WeTrackTicket } from 'src/app/models/we-track-ticket.model';
 import { WeTrackService } from 'src/app/services/we-track.service';
+import { Comment } from 'src/app/models/we-track-ticket.model';
 
 @Component({
   selector: 'app-we-track-list',
@@ -220,6 +221,10 @@ export class WeTrackListComponent implements OnInit, OnDestroy {
         }
       }
     })
+  }
+
+  public deleteComment(ticket: WeTrackTicket, comment: Comment): void {
+    this.weTrackService.deleteComment(ticket.uniqueId, comment.date, true);
   }
 
   /**

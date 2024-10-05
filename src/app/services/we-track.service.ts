@@ -65,6 +65,14 @@ export class WeTrackService extends ApiService<WeTrackResponse> {
     this.post('comment', {ticketId, comment});
   }
 
+  public deleteComment(ticketId: number, commentDate: number, isDeleted: boolean): void {
+    this.post('delete-comment', {ticketId, commentDate, isDeleted});
+  }
+
+  public permanentlyDeleteTicket(ticketId: number): void {
+    this.post('perm-delete', {ticketId});
+  }
+
 
   //     Methods used by components and services to access and modify data retrieved from the back end
   /**

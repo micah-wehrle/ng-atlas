@@ -7,5 +7,5 @@
   </ng-container>
 </div>
 <ng-container *ngFor="let button of listData?.buttons">
-  <button [class]="['btn', button.bootstrapButtonClass]" (click)="button.callback(findSelectedElementsForCallback())"> {{ button.text }} </button>
+  <button [class]="['btn', button.bootstrapButtonClass, 'me-2', 'mb-2']" (click)="button.callback(findSelectedElementsForCallback())" [disabled]="!buttonsEnabled"> {{ button.text }} </button>
 </ng-container>

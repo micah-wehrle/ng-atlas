@@ -53,7 +53,7 @@
       <ng-container *ngIf="isActive">
         <hr>
         <ng-container *ngFor="let comment of comments; let i = index">
-          <app-we-track-comment [comment]="comment" (deleteSelf)="deleteComment(i)"></app-we-track-comment>
+          <app-we-track-comment [comment]="comment" (deleteSelf)="deleteComment(comment)"></app-we-track-comment>
         </ng-container>
         <div class="">
           <div class="row">
