@@ -1,4 +1,4 @@
-import { Component, Input, OnInit } from '@angular/core';
+import { Component, EventEmitter, Input, OnInit, Output } from '@angular/core';
 
 @Component({
   selector: 'app-universal-selection-list',
@@ -9,6 +9,9 @@ export class UniversalSelectionListComponent implements OnInit {
 
   @Input() listData: ListData;
 
+  @Output() selectionChanged: EventEmitter<boolean[]> = new EventEmitter<boolean[]>();
+  @Output() buttonClicked: EventEmitter<string> = new EventEmitter<string>();
+
   public selectedElements: boolean[] = [];
   public buttonsEnabled: boolean = false;
 
@@ -17,20 +20,24 @@ export class UniversalSelectionListComponent implements OnInit {
   ngOnInit(): void {
   }
 
-  /**
-   * @description Generates an array of the IDs of selected elements. Used by buttons within the component which execute their given callback function, passing in the array of selected elements.
-   * @returns {number[]} An array of the IDs of all selected elements
-   */
-  public findSelectedElementsForCallback(): number[] {
-    const output: number[] = this.listData.listElements.filter( // Filter to only selected elements
-      (el: ListElement, i: number) => {
-        return !!this.selectedElements[i]; // double negated so that if it's undefined it will return false
-      }
-    ).map(el => el.uniqueId); // map to just the IDs
+  // /**
+  //  * @description Generates an array of the IDs of selected elements. Used by buttons within the component which execute their given callback function, passing in the array of selected elements.
+  //  * @returns {number[]} An array of the IDs of all selected elements
+  //  */
+  // public findSelectedElementsForCallback(): number[] {
+  //   const output: number[] = this.listData.listElements.filter( // Filter to only selected elements
+  //     (el: ListElement, i: number) => {
+  //       return !!this.selectedElements[i]; // double negated so that if it's undefined it will return false
+  //     }
+  //   ).map(el => el.uniqueId); // map to just the IDs
 
-    this.selectedElements = [];
+  //   this.selectedElements = [];
 
-    return output;
+  //   return output;
+  // }
+
+  public onButtonClicked(buttonText: string): void {
+    this.buttonClicked.next(buttonText);
   }
 
   /**
@@ -47,6 +54,8 @@ export class UniversalSelectionListComponent implements OnInit {
       }
     }
     this.selectedElements[index] = !this.selectedElements[index];
+
+    this.selectionChanged.next(this.selectedElements);
 
     this.updateButtons();
   }
@@ -80,7 +89,6 @@ export type ListElement = {
 export type ButtonData = {
   bootstrapButtonClass: string,
   text: string,
-  callback: (selectedElements: number[]) => void
 }
 
 // export enum ButtonTypes {

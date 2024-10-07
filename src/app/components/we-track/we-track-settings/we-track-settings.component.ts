@@ -28,39 +28,21 @@ export class WeTrackSettingsComponent implements OnInit, OnDestroy {
     listElements: [],
     buttons: [
       {
-        bootstrapButtonClass: 'btn-primary',
-        text: 'View',
-        callback: (selectedElements: number[]) => {
-          if (selectedElements.length === 1) {
-            // this.displayTicket(selectedElements[0]);
-          }
-        }
-      },
-      {
         bootstrapButtonClass: 'btn-success',
-        text: 'Restore',
-        callback: (selectedElements: number[]) => {
-          if (selectedElements.length === 1) {
-            // this.deletedTicketData.listElements = []; // hide array of tickets
-            this.restoreTicket(selectedElements[0]);
-          }
-        }
+        text: ButtonText.Restore
       },
       {
         bootstrapButtonClass: 'btn-danger',
-        text: 'Permanently Delete',
-        callback: (selectedElements: number[]) => {
-          if (selectedElements.length === 1) {
-            this.deleteTicket(selectedElements[0]);
-          }
-        }
+        text: ButtonText.PermDelete
       }
     ],
   };
 
   // To display in the ui if tickets are being downloaded.
   public isLoadingDeletedTickets: boolean = true;
-  private deletedTickets: WeTrackTicket[];
+  public deletedTickets: WeTrackTicket[];
+
+  public ticketToPreview: number = -1;
 
   constructor(private router: Router, private weTrackService: WeTrackService) { }
 
@@ -123,6 +105,33 @@ export class WeTrackSettingsComponent implements OnInit, OnDestroy {
     });
   }
 
+  public onDeletedListChanged(selected: boolean[]): void {
+    for (let i = 0; i < selected.length; i++) {
+      if (selected[i]) {
+        this.ticketToPreview = i;
+        return;
+      }
+    }
+
+    this.ticketToPreview = -1;
+  }
+
+  public onDeletedListButtonPressed(buttonText: string): void {
+    if (this.ticketToPreview === -1 || this.isLoadingDeletedTickets) {
+      return;
+    }
+
+    switch (buttonText) {
+      case ButtonText.Restore:
+        this.restoreTicket(this.deletedTickets[this.ticketToPreview].uniqueId);
+        break;
+      
+      case ButtonText.PermDelete:
+        this.permanentlyDeleteTicket(this.deletedTickets[this.ticketToPreview].uniqueId);
+        break;
+    }
+  }
+
   /**
    * @description Receives the ID for a ticket to restore, and then sends the request to the back end and subscribes to the response.
    * @param {number} uniqueId The unique ID for the ticket which is to be restored to the list of tickets
@@ -142,8 +151,18 @@ export class WeTrackSettingsComponent implements OnInit, OnDestroy {
     });
   }
 
-  private deleteTicket(uniqueId: number): void {
+  private permanentlyDeleteTicket(uniqueId: number): void {
+    this.isLoadingDeletedTickets = true;
     this.weTrackService.permanentlyDeleteTicket(uniqueId);
+    this.weTrackService.getLoading().pipe(take(2), takeUntil(this.ngUnsubscribe)).subscribe({
+      next: (loading: boolean) => {
+        if (!loading && this.weTrackService.hasSuccessfullyCompleted()) {
+          this.isLoadingDeletedTickets = false;
+
+          this.callDeletedTicketsFromBackEnd();
+        }
+      }
+    });
   }
 
   /**
@@ -154,4 +173,9 @@ export class WeTrackSettingsComponent implements OnInit, OnDestroy {
     return Array.isArray(this.deletedTickets) && this.deletedTickets.length > 0;
   }
 
+}
+
+enum ButtonText {
+  Restore = 'Restore',
+  PermDelete = 'Permanently Delete'
 }

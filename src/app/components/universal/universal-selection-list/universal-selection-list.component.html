@@ -7,5 +7,7 @@
   </ng-container>
 </div>
 <ng-container *ngFor="let button of listData?.buttons">
-  <button [class]="['btn', button.bootstrapButtonClass, 'me-2', 'mb-2']" (click)="button.callback(findSelectedElementsForCallback())" [disabled]="!buttonsEnabled"> {{ button.text }} </button>
+  <div class="mt-4 d-inline-flex">
+    <button [class]="['btn', button.bootstrapButtonClass, 'me-2', 'mb-2']" (click)="onButtonClicked(button.text)" [disabled]="!buttonsEnabled"> {{ button.text }} </button>
+  </div>
 </ng-container>
