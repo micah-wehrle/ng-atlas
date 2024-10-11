@@ -83,8 +83,8 @@ export class HomepageComponent implements OnInit, OnDestroy {
   private callJobServiceJobs(uuid: string): void {
     this.jobsResponse = null;
     this.jobService.resetData();
-    this.subscribeToJobServiceJobs();
     this.jobService.call(uuid, this.jobCount);
+    this.subscribeToJobServiceJobs();
   }
 
   /**
