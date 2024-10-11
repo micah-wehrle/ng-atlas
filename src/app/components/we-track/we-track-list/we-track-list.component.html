@@ -1,20 +1,20 @@
 <div class="my-3 pb-5">
   <div class="row">
     <div class="col-6">
-      <button type="button" class="btn btn-success" (click)="onNewTicket()">New Ticket</button>
+      <button type="button" class="btn btn-success" (click)="onNewTicket()" [disabled]="currentlyLoadingTickets">New Ticket</button>
     </div>
     <div class="col-6 d-flex justify-content-end">
       <span>Sorting: {{ selectedSorting }}</span>
-      <app-universal-dropdown-dots [dropdownContents]="sortingDropdownOptions" (optionClicked)="onSortTicketsByOption($event)"></app-universal-dropdown-dots>
+      <app-universal-dropdown-dots [dropdownContents]="sortingDropdownOptions" (optionClicked)="onSortTicketsByOption($event)" [disabled]="currentlyLoadingTickets"></app-universal-dropdown-dots>
     </div>
   </div>
   <div class="row mt-3">
     <div class="col-6">
-      <button type="button" class="btn btn-secondary" (click)="onRefreshTickets()">Refresh List</button>
+      <button type="button" class="btn btn-secondary" (click)="onRefreshTickets()" [disabled]="currentlyLoadingTickets">Refresh List</button>
     </div>
     <div class="col-6 d-flex justify-content-end">
       <span>Order: </span>
-      <button type="button" class="btn btn-primary btn-sm" (click)="sortOrder = -sortOrder; sortTickets();">{{ sortOrder === 1 ? 'Asc&nbsp;&nbsp;&nbsp;&uarr;' : 'Desc &darr;' }}</button>
+      <button type="button" class="btn btn-primary btn-sm" (click)="sortOrder = -sortOrder; sortTickets();" [disabled]="currentlyLoadingTickets">{{ sortOrder === 1 ? 'Asc&nbsp;&nbsp;&nbsp;&uarr;' : 'Desc &darr;' }}</button>
     </div>
   </div>
   <ng-container *ngIf="showFilters && false">
@@ -38,7 +38,7 @@
     <ng-container *ngIf="orderedTickets?.length > 0; else ticketError">
       <ng-container *ngFor="let ticket of orderedTickets; let i = index">
         <ng-container *ngIf="ticket">
-          <app-we-track-item [weTrackTicketIndex]="i" [weTrackTicket]="ticket" (deleteThisTicket)="deleteTicket(ticket)" (deleteThisTicketComment)="deleteComment(ticket, $event)"></app-we-track-item>
+          <app-we-track-item [weTrackTicketIndex]="i" [weTrackTicket]="ticket" (deleteThisTicket)="deleteTicket(ticket)" (deleteThisTicketComment)="deleteComment(ticket, $event)" (refreshPlease)="onRefreshTickets()"></app-we-track-item>
         </ng-container>
       </ng-container>
     </ng-container>
@@ -47,6 +47,6 @@
     </ng-template>
   </ng-template>
   <div class="row d-grid my-5 px-4">
-    <button class="btn btn-secondary" (click)="onSettings()">weTrack Settings</button>
+    <button class="btn btn-secondary" (click)="onSettings()" [disabled]="currentlyLoadingTickets">weTrack Settings</button>
   </div>
 </div>

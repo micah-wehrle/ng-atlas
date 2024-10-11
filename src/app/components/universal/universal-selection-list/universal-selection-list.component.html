@@ -3,7 +3,8 @@
 </ng-container>
 <div class="list-group mb-2">
   <ng-container *ngFor="let element of listData?.listElements; let i = index">
-    <div class="list-group-item" [ngClass]="{'active': selectedElements[i]}" style="border-color:lightgray" (click)="onSelectElement(i)"> {{ element.text }} </div>
+    <!-- TODO: clean this styling up -->
+    <div class="list-group-item" [ngClass]="{'active': selectedElements[i]}" [style]="{'border-color': 'lightgray', 'color': (element.text && element.text.trim().length > 0 ? 'black' : 'gray'), 'font-style': (element.text && element.text.trim().length > 0 ? '' : 'italic')}" (click)="onSelectElement(i)"> {{ element.text && element.text.trim().length > 0 ? element.text : '(No Title)' }} </div>
   </ng-container>
 </div>
 <ng-container *ngFor="let button of listData?.buttons">

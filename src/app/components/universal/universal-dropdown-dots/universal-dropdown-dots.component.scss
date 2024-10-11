@@ -25,3 +25,7 @@
 a {
   cursor: pointer;
 }
+
+.disable-dropdown {
+  pointer-events: none;
+}

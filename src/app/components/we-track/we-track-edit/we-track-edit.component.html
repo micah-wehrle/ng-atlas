@@ -11,11 +11,11 @@
     <div class="col mx-auto">
       <form (ngSubmit)="onFormSubmit()" [formGroup]="weTrackForm">
         <div class="form-group">
-          <label for="title">Title</label>
+          <label for="title">Title*</label>
           <input type="text" id="title" class="form-control" formControlName="title">
         </div>
         <div class="form-group">
-          <label for="type">Type</label>
+          <label for="type">Type*</label>
           <select formControlName="type" name="type" id="type" class="form-select">
             <option value="feature">Feature</option>
             <option value="issue">Issue</option>
@@ -23,7 +23,7 @@
           </select>
         </div>
         <div class="form-group">
-          <label for="importance">Importance</label>
+          <label for="importance">Importance*</label>
           <select formControlName="importance" name="importance" id="importance" class="form-select">
             <option value="low">Low</option>
             <option value="medium">Medium</option>
@@ -32,26 +32,52 @@
           </select>
         </div>
         <div class="form-group">
-          <label for="submitter">Submitter</label>
+          <label for="submitter">Submitter*</label>
           <input type="text" id="submitter" class="form-control" formControlName="submitter">
         </div>
         <div class="form-group">
-          <label for="description">Description</label>
+          <label for="description">Description*</label>
           <textarea id="description" class="form-control" formControlName="description" rows="3"></textarea>
         </div>
-        <div formGroupName="isAssignedGroup">
+        <ng-container formArrayName="repos">
+          <div class="card mt-2">
+            <div class="card-header d-flex justify-content-between">
+              <h5>Connected Repos:</h5>
+              <button type="button" class="btn btn-success btn-sm" (click)="onAddRepoForm()" [disabled]="!repoFormsAreValid()">Add</button>
+            </div>
+            <div class="card-body" *ngIf="repos.controls.length == 0"><i style="color: gray;">None</i></div>
+            <ul class="list-group list-group-flush" *ngIf="repos.controls.length > 0">
+
+              <ng-container *ngFor="let repo of repos.controls; let i = index" [formGroupName]="i">
+                <li class="list-group-item">
+                  <div class="form-group">
+                    <div class="d-flex justify-content-between">
+                      <h6>Repo {{i+1}}</h6>
+                      <button class="btn btn-danger btn-sm" type="button" (click)="onRemoveRepo(i)">X</button>
+                    </div>
+                    <label [for]="'url' + i">URL*</label>
+                    <input class="form-control" formControlName="url" type="text" [id]="'url'+i" placeholder="github.com/username/repo">
+                    <label [for]="'branch' + i">Branch</label>
+                    <input class="form-control" formControlName="branch" type="text" [id]="'branch'+i" placeholder="feature/branch-name">
+                  </div>
+                </li>
+              </ng-container>
+            </ul>
+          </div>
+        </ng-container>
+        <div formGroupName="isAssignedGroup" class="mt-3">
           <div class="form-check">
             <input type="checkbox" class="form-check-input" value="" id="isAssigned" formControlName="isAssigned">
-            <label class="form-check-label" for="isAssigned">Is assigned</label>
+            <label class="form-check-label" for="isAssigned">Is assigned*</label>
             <div *ngIf="!weTrackForm?.get('isAssignedGroup.isAssigned')?.value" class="subtext">(default to unassigned and pending)</div>
           </div>
           <ng-container *ngIf="weTrackForm?.get('isAssignedGroup.isAssigned')?.value">
             <div class="form-group">
-              <label for="assigned">Assigned To</label>
+              <label for="assigned">Assigned To*</label>
               <input type="text" id="assigned" class="form-control" formControlName="assignee">
             </div>
             <div class="form-group">
-              <label for="status">Ticket Status</label>
+              <label for="status">Ticket Status*</label>
               <select formControlName="status" name="status" id="status" class="form-select mb-3">
                 <option value="pending">Pending</option>
                 <option value="assigned">Assigned</option>
@@ -65,12 +91,12 @@
         <div formGroupName="customCreationGroup">
           <div class="form-check">
             <input type="checkbox" class="form-check-input" value="" id="isCustomCreation" formControlName="isCustomCreation">
-            <label class="form-check-label" for="isCustomCreation">Custom Created Date</label>
+            <label class="form-check-label" for="isCustomCreation">Custom Created Date*</label>
             <div *ngIf="!weTrackForm?.get('customCreationGroup.isCustomCreation')?.value" class="subtext">(default to today)</div>
           </div>
           <ng-container *ngIf="weTrackForm?.get('customCreationGroup.isCustomCreation')?.value">
             <div class="form-group">
-              <label for="customCreationDate">Ticket Creation Date</label>
+              <label for="customCreationDate">Ticket Creation Date*</label>
               <input type="date" id="customCreationDate" class="form-control mb-3" formControlName="customCreationDate">
             </div>
           </ng-container>
@@ -78,12 +104,12 @@
         <div formGroupName="customEditGroup">
           <div class="form-check">
             <input type="checkbox" class="form-check-input" value="" id="isCustomEdit" formControlName="isCustomEdit">
-            <label class="form-check-label" for="isCustomEdit">Custom Edited Date</label>
+            <label class="form-check-label" for="isCustomEdit">Custom Edited Date*</label>
             <div *ngIf="!weTrackForm?.get('customEditGroup.isCustomEdit')?.value" class="subtext"> (default to today)</div>
           </div>
           <ng-container *ngIf="weTrackForm?.get('customEditGroup.isCustomEdit')?.value">
             <div class="form-group">
-              <label for="customEditDate">Ticket Last Edit Date</label>
+              <label for="customEditDate">Ticket Last Edit Date*</label>
               <input type="date" id="customEditDate" class="form-control mb-3" formControlName="customEditDate">
             </div>
           </ng-container>

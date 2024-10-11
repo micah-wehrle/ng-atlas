@@ -1,7 +1,8 @@
 import { Component, EventEmitter, Input, OnInit, Output } from '@angular/core';
 import { Router } from '@angular/router';
+import { take } from 'rxjs';
 
-import { Comment, WeTrackTicket } from 'src/app/models/we-track-ticket.model';
+import { Comment, RepoData, WeTrackTicket } from 'src/app/models/we-track-ticket.model';
 import { WeTrackService } from 'src/app/services/we-track.service';
 
 @Component({
@@ -16,6 +17,7 @@ export class WeTrackItemComponent implements OnInit {
   // Emission to we-track-list when the user wants to delete this ticket from the database.
   @Output() deleteThisTicket: EventEmitter<void> = new EventEmitter<void>(); // An alternative to this would be to have the ticket delete itself from the database. However, this would require all of the places that use the master ticket array to subscribe to the service in order to be notified when the master list changes. -Micah
   @Output() deleteThisTicketComment: EventEmitter<Comment> = new EventEmitter<Comment>();
+  @Output() refreshPlease: EventEmitter<void> = new EventEmitter<void>(); // TODO: replace with dynamic emitter
 
   public isActive: boolean = false; // When the ticket is open in the list, showing the full description and all data
   public statusColor: string = ''; // For use with the stylized dot class next to the ticket status. See global style sheet for class info
@@ -125,12 +127,29 @@ export class WeTrackItemComponent implements OnInit {
 
     if(this.commentName.trim() === '' || this.commentText.trim() === '') { return; }
 
+    // TODO: change this to be something handled by the weTrack list, instead of in each component. Perhaps have a different emission system with different types, but just one emitter instead of an emitter for everything.
     this.weTrackService.addComment(this.weTrackTicket.uniqueId, {
-      name: this.commentName.trim(),
+      name: (()=>{
+        let name = this.commentName.trim();
+        if (name.toLowerCase() === 'brandon') {
+          if (Math.random() < 0.05) {
+            return name.substring(0,6); // ;)
+          }
+        }
+        return name;
+      })(),
       comment: this.commentText.trim(),
       date: new Date().getTime(),
       reply: []
     });
+
+    this.weTrackService.getLoading().pipe(take(2)).subscribe({
+      next: (loading: boolean) => {
+        if (!loading && this.weTrackService.hasSuccessfullyCompleted()) {
+          this.refreshPlease.next();
+        }
+      }
+    })
   }
 
   /**
@@ -143,5 +162,19 @@ export class WeTrackItemComponent implements OnInit {
 
   public stopPropagation(event: Event): void {
     event.stopPropagation();
+  }
+
+  public trimUrlToRepo(url: string): string {
+    const parts = url.split('/');
+    return parts.pop();
+  }
+
+  public buildBranchUrl(repo: RepoData): string {
+    let repoUrl = repo.url;
+    if (repoUrl[repoUrl.length-1] !== '/') {
+      repoUrl += '/';
+    }
+
+    return `${repoUrl}tree/${repo.branch}`;
   }
 }

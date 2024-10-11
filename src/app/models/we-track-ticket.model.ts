@@ -57,6 +57,7 @@ export class WeTrackTicket {
     public submitter: string,
     
     // Optional parameters
+    public repoData: RepoData[] = [],
     public assignee: string = '',
     public status: string = WeTrackTicket.STATIC_DATA.STATUS.PENDING,
     public creationDate: Date = new Date(),
@@ -74,3 +75,8 @@ export interface Comment {
 }
 
 export interface Reply extends Omit<Comment, 'reply'> {} 
+
+export type RepoData = {
+  url: string,
+  branch?: string,
+}

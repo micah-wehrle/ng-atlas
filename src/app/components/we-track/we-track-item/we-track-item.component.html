@@ -40,14 +40,31 @@
     <div class="container mt-2">
       <div class="row mt-2">
         <div class="col">
+          <h6 *ngIf="isActive">Description:</h6>
           <div [ngStyle]="!isActive ? ellipsesStyleWrap : {}">
             {{ weTrackTicket.description }} 
           </div>
         </div>
       </div>
+      <div class="row mt-2" *ngIf="isActive && weTrackTicket.repoData?.length > 0">
+        <div class="col">
+          <h6>Connected {{ weTrackTicket.repoData.length === 1 ? 'Repository' : 'Repositories' }}</h6>
+          <ul class="list-group">
+            <li *ngFor="let repo of weTrackTicket.repoData" class="list-group-item">
+              <span>Repo:</span>
+              <a type="button" class="btn btn-primary btn-sm px-1 py-0" target="_blank" [href]="repo.url">{{ trimUrlToRepo(repo.url) }} &#8250;</a>
+              <ng-container *ngIf="repo.branch">
+                <br>
+                <span>Branch:</span>
+                <a type="button" class="btn btn-primary btn-sm px-1 py-0" target="_blank" [href]="buildBranchUrl(repo)">{{ repo.branch }} &#8250;</a>
+              </ng-container>
+            </li>
+          </ul>
+        </div>
+      </div>
       <div class="row mt-2">
         <div class="col" [ngStyle]="comments && comments.length > 0 ? {} : {'color': '#999'}">
-          Comments ({{ comments ? comments.length : 0 }}) <span *ngIf="comments && comments.length > 0" class="last-commenter"> - Last by {{ comments[comments.length - 1].name }}</span>
+          Comments ({{ comments ? comments.length : 0 }}) <span *ngIf="comments && comments.length > 0 && !isActive" class="last-commenter"> - Last by {{ comments[comments.length - 1].name }}</span>
         </div>
       </div>
       <ng-container *ngIf="isActive">

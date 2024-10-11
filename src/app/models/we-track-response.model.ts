@@ -26,6 +26,7 @@ export class WeTrackResponse extends ApiResponseModel {
           ticket.description,
           ticket.importance,
           ticket.submitter,
+          ticket.repoData,
           ticket.assignee,
           ticket.status,
           ticket.creationDate,

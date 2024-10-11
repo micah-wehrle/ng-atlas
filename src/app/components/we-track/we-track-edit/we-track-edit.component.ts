@@ -1,5 +1,5 @@
 import { Component, OnInit } from '@angular/core';
-import { AbstractControl, FormControl, FormGroup, ValidationErrors, ValidatorFn, Validators } from '@angular/forms';
+import { AbstractControl, FormArray, FormControl, FormGroup, ValidationErrors, ValidatorFn, Validators } from '@angular/forms';
 import { Router } from '@angular/router';
 import { take } from 'rxjs';
 
@@ -22,6 +22,7 @@ export class WeTrackEditComponent implements OnInit {
     'importance': new FormControl('low', Validators.required),
     'submitter': new FormControl('', Validators.required),
     'description': new FormControl('', Validators.required),
+    'repos': new FormArray([]),
     'isAssignedGroup': new FormGroup(
       {
         'isAssigned': new FormControl(false), // checkbox to show nested forms
@@ -52,7 +53,9 @@ export class WeTrackEditComponent implements OnInit {
     ),
   });
 
-  constructor(private router: Router, private weTrackService: WeTrackService) { }
+  constructor(private router: Router, private weTrackService: WeTrackService) { 
+    // this.weTrackForm.
+  }
 
   ngOnInit(): void {
     if(this.router.url === '/we-track/edit') {  
@@ -64,6 +67,16 @@ export class WeTrackEditComponent implements OnInit {
       else { // If the user is on the edit page, and has a ticket selected in the weTrackService..
         const selTicket: WeTrackTicket = this.weTrackService.getSelectedTicket(); // retrieve the selected ticket from weTrackService
         
+        // Patch in repo data
+        if (Array.isArray(selTicket.repoData) && selTicket.repoData.length > 0) {
+          for (let repo of selTicket.repoData) {
+            const repoGroup = this.createEmptyRepoFormGroup();
+            repoGroup.controls['url'].patchValue(repo.url);
+            repoGroup.controls['branch'].patchValue(repo.branch);
+            this.repos.push(repoGroup);
+          }
+        }
+
         this.weTrackForm.patchValue(selTicket ? { // update all the values of the FormGroup to the data retrieved from selected ticket
           'title': selTicket.title ? selTicket.title : '',
           'type': selTicket.type ? selTicket.type : '',
@@ -79,13 +92,42 @@ export class WeTrackEditComponent implements OnInit {
             'isCustomCreation': true, // will always be true since we are editing a pre-existing ticket
             'customCreationDate': selTicket.creationDate ? new Date(selTicket.creationDate).toISOString().substring(0,10) : '', // Ideally shouldn't be non truthy since we're editing a pre-existing ticket, but just in case 
           },
-          // 'customEditGroup': {
-          //   'isCustomEdit': selTicket.editDate && (selTicket.creationDate && selTicket.creationDate !== selTicket.editDate) ? true : false,
-          //   'customEditDate': selTicket.editDate ? new Date(selTicket.editDate).toISOString().substring(0,10) : '',
-          // }
         } : {} ); // if selTicket isn't truthy, don't patch anything.
       }
     }
+  }
+
+  get repos(): FormArray {
+    return this.weTrackForm.get('repos') as FormArray;
+  }
+
+  public repoFormsAreValid(): boolean {
+    for (let repo of this.repos.controls) {
+      if (repo.status !== 'VALID') {
+        return false;
+      }
+    }
+
+    return true;
+  }
+
+  private createEmptyRepoFormGroup(): FormGroup {
+    return new FormGroup({
+      'url': new FormControl('', [Validators.required, Validators.pattern(/^(https:\/\/)?(www\.)?github\.com\/.+\/.+$/i)]),
+      'branch': new FormControl('')
+    })
+  }
+
+  public onAddRepoForm(): void {
+    if (!this.repoFormsAreValid()) {
+      return;
+    }
+
+    this.repos.push(this.createEmptyRepoFormGroup());
+  }
+
+  public onRemoveRepo(index: number): void {
+    this.repos.removeAt(index);
   }
 
   /**
@@ -109,6 +151,15 @@ export class WeTrackEditComponent implements OnInit {
       importance && importance.value ? importance.value : '',
       submitter && submitter.value ? submitter.value : '',
     );
+
+    tempTicket.repoData = (this.repos.controls as FormGroup[]).map(repo => {
+      let url = repo.controls['url'].value;
+      
+      if (url.substring(0,8) !== 'https://') {
+        url = 'https://' + url;
+      }
+      return {url, branch: repo.controls['branch'].value};
+    })
     
     // If the isAssigned box is checked, insert assignment data into tempTicket 
     if(this.weTrackForm.get('isAssignedGroup.isAssigned')?.value) {
