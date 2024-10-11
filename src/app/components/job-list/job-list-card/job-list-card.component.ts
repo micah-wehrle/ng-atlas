@@ -11,12 +11,26 @@ export class JobListCardComponent implements OnInit {
   @Input('job') job: JobData;
   @Input('i') i: number;
 
+  public showPopup: boolean = false;
+  private deleteLaterButPopupTimerId;
+
   constructor() { }
 
   ngOnInit(): void {
   }
 
-  public onPokeballClick($event): void {
+  public onPokeballClick($event: Event): void {
+    $event.stopPropagation();
+    
+    if (this.showPopup) {
+      this.showPopup = false;
+      clearTimeout(this.deleteLaterButPopupTimerId);
+      return;
+    }
+
+    this.showPopup = true;
+
+    this.deleteLaterButPopupTimerId = setTimeout(() => this.showPopup = false, 2000);
 
   }
 

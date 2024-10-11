@@ -1,22 +1,29 @@
 <div class="card end-0 mb-2"> 
-  <div class="row">
-    <div class="col-3 text-center pt-3 ps-4 text-light" [ngStyle]=" {'background-color': job?.jobTypeColor}">
-      <p>JOB</p>
-      <p>{{ i+1 }}</p>
-      <p class="mt-5 smaller-text">{{job?.transportType}}</p>
+  <div [ngClass]="['sticky-popup', showPopup ? '' : 'hidden']" *ngIf="job?.pokemon">
+    <div class="popup-tail"></div>
+    <div class="popup-content">
+      {{job.pokemon.name}}
     </div>
-    <div class="col-9">
-      <div class="d-flex justify-content-between pe-1">
-        <div>ID: {{ job?.accountNumber }}</div>
-        <div (click)="onPokeballClick($event)" *ngIf="true">
-          <div class="sticky-popup">This is a pokemon</div>
-          <img src="../../../assets/pball-icon.svg" width="20" />
-        </div>
+  </div>
+  <div class="overflow-card">
+    <div class="row">
+      <div class="col-3 text-center pt-3 ps-4 text-light" [ngStyle]=" {'background-color': job?.jobTypeColor}">
+        <p>JOB</p>
+        <p>{{ i+1 }}</p>
+        <p class="mt-5 smaller-text">{{job?.transportType}}</p>
       </div>
-      <h5>{{ job?.jobType }}</h5>
-      <p>Appt: {{ job?.appointment }}</p>
-      <span>{{ job?.location?.streetAddress }}</span>
-      <p>{{ job?.location?.city }}, {{ job?.location?.state }} {{ job?.location?.zip }}</p>
+      <div class="col-9">
+        <div class="d-flex justify-content-between pe-1">
+          <div>ID: {{ job?.accountNumber }}</div>
+          <div (click)="onPokeballClick($event)" *ngIf="job?.pokemon" id="pokeball-clicker">
+            <img src="../../../assets/pball-icon.svg" width="20" />
+          </div>
+        </div>
+        <h5>{{ job?.jobType }}</h5>
+        <p>Appt: {{ job?.appointment }}</p>
+        <span>{{ job?.location?.streetAddress }}</span>
+        <p>{{ job?.location?.city }}, {{ job?.location?.state }} {{ job?.location?.zip }}</p>
+      </div>
     </div>
   </div>
 </div>
