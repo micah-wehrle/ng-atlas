@@ -2,6 +2,7 @@ import { ApiResponseModel } from "./api-response.model";
 
 export class JobsResponse extends ApiResponseModel {
   private jobs: JobData[];
+  private date: string;
 
   constructor(response: any) {
     super(response);
@@ -13,6 +14,14 @@ export class JobsResponse extends ApiResponseModel {
    */
   public getJobs(): JobData[] {
     return this.jobs.slice();
+  }
+
+  /**
+   * @description Getter for accessing the date from which the back end generated the job list.
+   * @returns The date provided by the back end job payload
+   */
+  public getDate(): string {
+    return this.date;
   }
 
   /**
@@ -35,6 +44,8 @@ export class JobsResponse extends ApiResponseModel {
       job.prettyPhone = this.prettifyPhone(job.phone);
       job.jobTypeColor = this.parseJobTypeColor(jobType);
     }
+
+    this.date = response.date;
   }
 
   /**

@@ -14,10 +14,11 @@ import { WeatherService } from 'src/app/services/weather.service';
 export class HomepageComponent implements OnInit, OnDestroy {
   public weatherAlertResponse: WeatherAlertResponse;
   public jobsResponse: JobsResponse;
-  private techUUID: string;
+  public techUUID: string;
   private jobServiceSubscription: Subscription;
   private ngUnsubscribe: Subject<void> = new Subject<void>();
   private jobCount: number;
+  private shownDate: Date = new Date();
   
   constructor(private weatherService: WeatherService, private jobService: JobService) { }
 
@@ -25,10 +26,13 @@ export class HomepageComponent implements OnInit, OnDestroy {
     this.techUUID = 'mw224g'; // TODO - Make part of a sort of "login" feature. Aaron is working on this I believe, possibly a sort of modal.
     this.jobsResponse = this.jobService.getResults();
     if (!this.jobsResponse) { // don't call the api if it already has data
-      this.callJobServiceJobs(this.techUUID);
+      this.callJobServiceJobs(this.techUUID, this.formatDate(this.shownDate));
     }
     else {
       this.calculateJobCount();
+      const dateParts = this.jobsResponse.getDate().split('-');
+      this.shownDate.setMonth(Number(dateParts[0])-1);
+      this.shownDate.setDate(Number(dateParts[1]));
     }
   }
 
@@ -38,13 +42,55 @@ export class HomepageComponent implements OnInit, OnDestroy {
   }
 
   /**
+   * @description Gives the currently stored date in the format mm/dd, or as the text "Today" if the stored date is today
+   * @returns 
+   */
+  public get displayDate(): string {
+    const formattedDate = this.formatDate(this.shownDate);
+    const todayFormatted = this.formatDate(new Date());
+    return formattedDate === todayFormatted ? 'Today' : formattedDate;
+  }
+
+  /**
+   * @description Formats the given date as a string of month and day
+   * @param day The date to format
+   * @returns In the format mm/dd
+   */
+  private formatDate(day: Date): string {
+    return `${day.getMonth()+1}/${day.getDate()}`;
+  }
+
+  /**
+   * @description Adjusts the stored date by the given offset, then refreshes the job list to call the back end with the new date
+   * @param offset How many days to adjust the stored date, typically +1 or -1
+   */
+  public onAddDay(offset: number): void {
+    this.shownDate.setDate(this.shownDate.getDate() + offset);
+    this.onRefreshJobList();
+  }
+
+  /**
+   * @description Sets the stored date to today's date. If the date wasn't already today, then refreshes the job list to call the back end with today's date
+   */
+  public onToToday(): void {
+    const formattedDate = this.formatDate(this.shownDate);
+    const todayFormatted = this.formatDate(new Date());
+    if (formattedDate === todayFormatted) {
+      return;
+    }
+    
+    this.shownDate = new Date();
+    this.onRefreshJobList();
+  }
+
+  /**
    * @todo This method requires implementation, now that the job generation has been moved to the back end. Will require back end changes as well, requesting the back end to generate a new job. This should be done by creating a system where the front end can do: backendURL/jobs/get/{uuid}/{job-index}. Usually, when removing job-index, the back end will decide how many jobs should be returned. However, when passing job-index, the back end will then then generate that many jobs and remove them. So essentially the front end will request job-index as current job count + 1
    * @description For use in html when the request job button is clicked. Will Generate a new job to add to the job list
    * @returns {void}
    */
   public onRequestJobButtonClick(): void {
     this.jobCount++;
-    this.callJobServiceJobs(this.techUUID);
+    this.onRefreshJobList();
   }
 
   /**
@@ -52,7 +98,7 @@ export class HomepageComponent implements OnInit, OnDestroy {
    * @returns {void}
    */
   public onRefreshJobList(): void {
-    this.callJobServiceJobs(this.techUUID);
+    this.callJobServiceJobs(this.techUUID, this.formatDate(this.shownDate));
   }
 
   /**
@@ -80,11 +126,11 @@ export class HomepageComponent implements OnInit, OnDestroy {
    * @param {string} uuid The uuid for the tech for which to retrieve the job list. 
    * @returns {void}
    */
-  private callJobServiceJobs(uuid: string): void {
+  private callJobServiceJobs(uuid: string, date: string): void {
     this.jobsResponse = null;
     this.jobService.resetData();
     this.subscribeToJobServiceJobs();
-    this.jobService.call(uuid, this.jobCount);
+    this.jobService.call(uuid, date, this.jobCount);
   }
 
   /**
