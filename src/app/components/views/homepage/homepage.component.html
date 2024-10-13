@@ -6,20 +6,20 @@
     <div class="col text-center">
       <div class="card pt-3">
         <img src="../../../assets/banner.png" class="banner">
-        <h5>Be safe!</h5>
+        <h5>Be safe, {{ techUUID }}!</h5>
       </div>
     </div>
   </div>
   <div class="row mb-4">
-    <div class="col text-center">
+    <div class="col text-center" (click)="onAddDay(-1)">
       &larr;
     </div>
     <div class="col text-center">
-      <div class="card">
-        Today
+      <div class="card" (click)="onToToday()">
+        {{ displayDate }}
       </div>
     </div>
-    <div class="col text-center">
+    <div class="col text-center" (click)="onAddDay(1)">
       &rarr;
     </div>
   </div>
