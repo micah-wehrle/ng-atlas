@@ -2,7 +2,11 @@
   <div [ngClass]="['sticky-popup', showPopup ? '' : 'hidden']" *ngIf="job?.pokemon">
     <div class="popup-tail"></div>
     <div class="popup-content">
-      {{job.pokemon.name}}
+      <p>{{ job?.pokemon?.name }}</p>
+      <div class="img-frame">
+        <!-- <img src="https://images-wixmp-ed30a86b8c4ca887773594c2.wixmp.com/f/b42d0ecb-fd80-4a6d-bb80-93fe2bb02389/dg3gmm4-32123f6b-2b8b-4a8c-a763-fe37e2d5baa4.png"> -->
+        <img [src]="job?.pokemon?.sprites?.front_default">
+      </div>
     </div>
   </div>
   <div class="overflow-card">
