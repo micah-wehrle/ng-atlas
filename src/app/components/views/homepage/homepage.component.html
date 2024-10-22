@@ -6,20 +6,20 @@
     <div class="col text-center">
       <div class="card pt-3">
         <img src="../../../assets/banner.png" class="banner">
-        <h5>Be safe!</h5>
+        <h5>Be safe, {{ techUUID }}!</h5>
       </div>
     </div>
   </div>
   <div class="row mb-4">
-    <div class="col text-center">
+    <div class="col text-center" (click)="onAddDay(-1)">
       &larr;
     </div>
     <div class="col text-center">
-      <div class="card">
-        Today
+      <div class="card" (click)="onToToday()">
+        {{ displayDate }}
       </div>
     </div>
-    <div class="col text-center">
+    <div class="col text-center" (click)="onAddDay(1)">
       &rarr;
     </div>
   </div>
@@ -35,7 +35,8 @@
   </div>
   <div class="row my-5">
     <div class="col-9 d-grid"> 
-      <button type="button" class="btn btn-primary" [disabled]="!jobsResponse" (click)="onRequestJobButtonClick()">Request Job</button>
+      <!-- Request job button is currently disabled if there is no job data from back end, or if the date currently being viewed is in the past (as it would be odd to be able to request jobs on past days) -->
+      <button type="button" class="btn btn-primary" [disabled]="!jobsResponse || dateIsInPast" (click)="onRequestJobButtonClick()">Request Job</button>
     </div>
     <div class="col-3 d-grid">
       <button type="button" class="btn btn-secondary" (click)="onRefreshJobList()">Refresh</button>
