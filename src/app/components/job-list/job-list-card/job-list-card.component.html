@@ -1,5 +1,5 @@
 <div class="card end-0 mb-2"> 
-  <div [ngClass]="['sticky-popup', showPopup ? '' : 'hidden']" *ngIf="job?.pokemon">
+  <div [ngClass]="['sticky-popup', showPopup ? '' : 'hidden']" *ngIf="job?.pokemon" (click)="onPokeCardClick($event)">
     <div class="popup-tail"></div>
     <div class="popup-content">
       <p>{{ job?.pokemon?.name }}</p>
