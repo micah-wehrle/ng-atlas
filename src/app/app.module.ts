@@ -37,6 +37,7 @@ import { UniversalFacilitiesCardComponent } from './components/universal/univers
 import { WeatherViewComponent } from './components/views/weather-view/weather-view.component';
 import { SidebarListComponent } from './components/header/sidebar-list/sidebar-list.component';
 import { JobListCardComponent } from './components/job-list/job-list-card/job-list-card.component';
+import { PokeSubviewComponent } from './components/views/job-view/subviews/poke-subview/poke-subview.component';
 
 @NgModule({
   declarations: [
@@ -71,7 +72,8 @@ import { JobListCardComponent } from './components/job-list/job-list-card/job-li
     UniversalFacilitiesCardComponent,
     WeatherViewComponent,
     SidebarListComponent,
-    JobListCardComponent
+    JobListCardComponent,
+    PokeSubviewComponent
   ],
   imports: [
     BrowserModule,

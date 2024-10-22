@@ -1,6 +1,6 @@
 import { Injectable } from '@angular/core';
 
-import { Pokemon } from '../models/pokemon.model';
+import { Pokemon } from '../models/pokemon-response.model';
 
 @Injectable({
   providedIn: 'root'

@@ -16,6 +16,7 @@ import { HistorySubviewComponent } from './components/views/job-view/subviews/hi
 import { FacilitiesSubviewComponent } from './components/views/job-view/subviews/facilities-subview/facilities-subview.component';
 import { TestsSubviewComponent } from './components/views/job-view/subviews/tests-subview/tests-subview.component';
 import { WeatherViewComponent } from './components/views/weather-view/weather-view.component';
+import { PokeSubviewComponent } from './components/views/job-view/subviews/poke-subview/poke-subview.component';
 
 const routes: Routes = [
   { path: '', component: HomepageComponent, pathMatch: 'full' },
@@ -25,7 +26,8 @@ const routes: Routes = [
     { path: 'customer', component: CustomerSubviewComponent },
     { path: 'history', component: HistorySubviewComponent },
     { path: 'facilities', component: FacilitiesSubviewComponent },
-    { path: 'tests', component: TestsSubviewComponent }
+    { path: 'tests', component: TestsSubviewComponent },
+    { path: 'poke', component: PokeSubviewComponent }
   ]},
   // Mini-projects
   { path: 'touch-n-go', component: OfficeInfoComponent },

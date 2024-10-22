@@ -1,5 +1,5 @@
 import { ApiResponseModel } from "./api-response.model";
-import { Pokemon } from "./pokemon.model";
+import { Pokemon } from "./pokemon-response.model";
 
 export class JobsResponse extends ApiResponseModel {
   private jobs: JobData[];

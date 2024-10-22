@@ -26,6 +26,7 @@ export class JobViewComponent implements OnInit, OnDestroy {
     this.getCurrentJob();
     this.subscribeToWeatherService();
     this.setActiveTabByUrl();
+    this.checkForPokemonPreLoad();
   }
 
   ngOnDestroy(): void {
@@ -81,6 +82,10 @@ export class JobViewComponent implements OnInit, OnDestroy {
   private getCurrentJob(): void {
     this.job = this.jobService.getSelectedJob();
     this.verifyJobSelected(); // Verify that the job is not null. This can happen if the user refreshes the page from within a job!
+
+    if (this.job.pokemon) {
+      this.tabTitleRoutes.push('poke');
+    }
   }
 
   /**
@@ -95,6 +100,12 @@ export class JobViewComponent implements OnInit, OnDestroy {
         }
       }
     });
+  }
+
+  private checkForPokemonPreLoad(): void {
+    if (this.job.pokemon.hasBeenViewedOnJobList) {
+      
+    }
   }
 
 }
