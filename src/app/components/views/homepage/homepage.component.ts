@@ -14,11 +14,14 @@ import { WeatherService } from 'src/app/services/weather.service';
 export class HomepageComponent implements OnInit, OnDestroy {
   public weatherAlertResponse: WeatherAlertResponse;
   public jobsResponse: JobsResponse;
+
   public techUUID: string;
   private jobServiceSubscription: Subscription;
   private ngUnsubscribe: Subject<void> = new Subject<void>();
   private jobCount: number;
+
   private shownDate: Date = new Date();
+  public dateIsInPast: boolean = false;
   
   constructor(private weatherService: WeatherService, private jobService: JobService) { }
 
@@ -26,7 +29,7 @@ export class HomepageComponent implements OnInit, OnDestroy {
     this.techUUID = 'mw224g'; // TODO - Make part of a sort of "login" feature. Aaron is working on this I believe, possibly a sort of modal.
     this.jobsResponse = this.jobService.getResults();
     if (!this.jobsResponse) { // don't call the api if it already has data
-      this.callJobServiceJobs(this.techUUID, this.formatDate(this.shownDate));
+      this.onRefreshJobList();
     }
     else {
       this.calculateJobCount();
@@ -98,7 +101,23 @@ export class HomepageComponent implements OnInit, OnDestroy {
    * @returns {void}
    */
   public onRefreshJobList(): void {
+    this.dateIsInPast = this.isDateInPast(this.shownDate);
     this.callJobServiceJobs(this.techUUID, this.formatDate(this.shownDate));
+  }
+
+  /**
+   * @description Will compare the given date to the current system date to see if given date is in the past. Only compares the calendar date, and ignores hours/minutes/etc.
+   * @param dateToCheck The date to validate if it is in the past
+   * @returns True only if the calendar date of the given value is less than the current system calendar date
+   */
+  private isDateInPast(dateToCheck: Date): boolean {
+    const zeroedDateToCheck = new Date(dateToCheck); // should remove the pointer potential issue
+    zeroedDateToCheck.setHours(0, 0, 0, 0); // zero the date to midnight
+
+    const currentDate = new Date();
+    currentDate.setHours(0, 0, 0, 0); // zero the date to midnight
+
+    return currentDate.getTime() > zeroedDateToCheck.getTime();
   }
 
   /**
