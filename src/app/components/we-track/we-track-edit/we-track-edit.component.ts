@@ -65,7 +65,7 @@ export class WeTrackEditComponent implements OnInit {
         this.router.navigate(['we-track','new']);
       }
       else { // If the user is on the edit page, and has a ticket selected in the weTrackService..
-        const selTicket: WeTrackTicket = this.weTrackService.getSelectedTicket(); // retrieve the selected ticket from weTrackService
+        const selTicket: WeTrackTicket = this.weTrackService.getSelectedTicket(this.weTrackService.getSelectedTicketGroup()); // retrieve the selected ticket from weTrackService
         
         // Patch in repo data
         if (Array.isArray(selTicket.repoData) && selTicket.repoData.length > 0) {
@@ -185,12 +185,12 @@ export class WeTrackEditComponent implements OnInit {
     }
 
     if (this.isEditing) { 
-      tempTicket.comments = this.weTrackService.getSelectedTicket()?.comments // Comments will only exist if this was edited
-      const outputTicket: Partial<WeTrackTicket> = this.weTrackService.findChangesToSelectedTicket(tempTicket);
-      this.weTrackService.updateTicket(outputTicket);
+      tempTicket.comments = this.weTrackService.getSelectedTicket(this.weTrackService.getSelectedTicketGroup())?.comments // Comments will only exist if this was edited
+      const outputTicket: Partial<WeTrackTicket> = this.weTrackService.findChangesToSelectedTicket(tempTicket, this.weTrackService.getSelectedTicketGroup());
+      this.weTrackService.updateTicket(outputTicket, this.weTrackService.getSelectedTicketGroup());
     }
     else {
-      this.weTrackService.createTicket(tempTicket);
+      this.weTrackService.createTicket(tempTicket, this.weTrackService.getSelectedTicketGroup());
     }
 
     this.subscribeToWeTrackService();

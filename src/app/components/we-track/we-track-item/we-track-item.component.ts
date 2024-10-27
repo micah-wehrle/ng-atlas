@@ -128,7 +128,7 @@ export class WeTrackItemComponent implements OnInit {
     if(this.commentName.trim() === '' || this.commentText.trim() === '') { return; }
 
     // TODO: change this to be something handled by the weTrack list, instead of in each component. Perhaps have a different emission system with different types, but just one emitter instead of an emitter for everything.
-    this.weTrackService.addComment(this.weTrackTicket.uniqueId, {
+    this.weTrackService.addComment(this.weTrackTicket.uniqueId, this.weTrackService.getSelectedTicketGroup(), {
       name: (()=>{
         let name = this.commentName.trim();
         if (name.toLowerCase() === 'brandon') {
@@ -166,7 +166,13 @@ export class WeTrackItemComponent implements OnInit {
 
   public trimUrlToRepo(url: string): string {
     const parts = url.split('/');
-    return parts.pop();
+    let output: string;
+    do {
+      output = parts.pop().trim();
+    }
+    while(output === '' && parts.length > 0);
+
+    return output;
   }
 
   public buildBranchUrl(repo: RepoData): string {

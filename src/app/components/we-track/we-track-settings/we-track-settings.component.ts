@@ -89,7 +89,7 @@ export class WeTrackSettingsComponent implements OnInit, OnDestroy {
     this.weTrackService.getLoading().pipe(take(2), takeUntil(this.ngUnsubscribe)).subscribe({
       next: (loading: boolean) => {
         if (!loading && this.weTrackService.hasSuccessfullyCompleted()) {
-          this.deletedTickets = this.weTrackService.getResults().getTickets()
+          this.deletedTickets = this.weTrackService.getResults().getTickets(this.weTrackService.getSelectedTicketGroup())
           this.isLoadingDeletedTickets = false;
 
           if (Array.isArray(this.deletedTickets)) {
@@ -139,7 +139,7 @@ export class WeTrackSettingsComponent implements OnInit, OnDestroy {
    */
   private restoreTicket(uniqueId: number): void {
     this.isLoadingDeletedTickets = true;
-    this.weTrackService.deleteTicket(uniqueId, false);
+    this.weTrackService.deleteTicket(uniqueId, this.weTrackService.getSelectedTicketGroup(), false);
     this.weTrackService.getLoading().pipe(take(2), takeUntil(this.ngUnsubscribe)).subscribe({
       next: (loading: boolean) => {
         if (!loading && this.weTrackService.hasSuccessfullyCompleted()) {
@@ -153,7 +153,7 @@ export class WeTrackSettingsComponent implements OnInit, OnDestroy {
 
   private permanentlyDeleteTicket(uniqueId: number): void {
     this.isLoadingDeletedTickets = true;
-    this.weTrackService.permanentlyDeleteTicket(uniqueId);
+    this.weTrackService.permanentlyDeleteTicket(uniqueId, this.weTrackService.getSelectedTicketGroup());
     this.weTrackService.getLoading().pipe(take(2), takeUntil(this.ngUnsubscribe)).subscribe({
       next: (loading: boolean) => {
         if (!loading && this.weTrackService.hasSuccessfullyCompleted()) {

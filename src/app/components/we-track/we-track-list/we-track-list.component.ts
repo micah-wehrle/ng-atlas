@@ -13,6 +13,7 @@ import { Comment } from 'src/app/models/we-track-ticket.model';
 })
 export class WeTrackListComponent implements OnInit, OnDestroy {
   public tickets: WeTrackTicket[] = []; // Defaults to empty, will be populated in ngOnInit
+  public ticketGroups: string[] = [];
   public orderedTickets: WeTrackTicket[] = this.tickets.slice(); // A copy of the default ticket list (will be initialized as empty)
   private ngUnsubscribe: Subject<void> = new Subject<void>();
 
@@ -104,7 +105,7 @@ export class WeTrackListComponent implements OnInit, OnDestroy {
         this.orderedTickets.sort( (a, b) => (a.submitter > b.submitter) ? this.sortOrder : -this.sortOrder);
         break;
       case this.staticSortingDropdownOptions.PRIORITY: // Call a service method which will return a number corresponding to the 'weight' of the ticket importance. Low importance returns a low number and high importance returns a high number.
-        this.orderedTickets.sort( (a,b) => ( this.weTrackService.getSortableValueFromTicket(a, 'importance') > this.weTrackService.getSortableValueFromTicket(b, 'importance')) ? this.sortOrder : -this.sortOrder)
+        this.orderedTickets.sort( (a,b) => ( this.weTrackService.getSortableValueFromTicket(a, this.weTrackService.getSelectedTicketGroup(), 'importance') > this.weTrackService.getSortableValueFromTicket(b, this.weTrackService.getSelectedTicketGroup(), 'importance')) ? this.sortOrder : -this.sortOrder)
         break;
       case this.staticSortingDropdownOptions.ASSIGNEE: // Sort by assignee alphabetically
         this.orderedTickets.sort((a,b) => (a.assignee > b.assignee) ? this.sortOrder : -this.sortOrder);
@@ -113,7 +114,7 @@ export class WeTrackListComponent implements OnInit, OnDestroy {
         this.orderedTickets.sort((a,b) => (new Date(a.editDate).getTime() > new Date(b.editDate).getTime()) ? this.sortOrder : -this.sortOrder);
         break;
       case this.staticSortingDropdownOptions.STATUS: // Sort status in an order deemed meaningful by the service method
-        this.orderedTickets.sort((a,b) => ( this.weTrackService.getSortableValueFromTicket(a, 'status') > this.weTrackService.getSortableValueFromTicket(b, 'status')  ) ? this.sortOrder : -this.sortOrder);
+        this.orderedTickets.sort((a,b) => ( this.weTrackService.getSortableValueFromTicket(a, this.weTrackService.getSelectedTicketGroup(), 'status') > this.weTrackService.getSortableValueFromTicket(b, this.weTrackService.getSelectedTicketGroup(), 'status')  ) ? this.sortOrder : -this.sortOrder);
     }
   }
 
@@ -176,7 +177,11 @@ export class WeTrackListComponent implements OnInit, OnDestroy {
     this.weTrackService.getLoading().pipe(take(2), takeUntil(this.ngUnsubscribe)).subscribe({
       next: (loading: boolean) => {
         if (!loading && this.weTrackService.hasSuccessfullyCompleted()) {
-          this.tickets = this.weTrackService.getTickets();
+          this.ticketGroups = this.weTrackService.getTicketGroups();
+          if (this.weTrackService.getSelectedTicketGroup() === '') {
+            this.weTrackService.setSelectedTicketGroup(this.ticketGroups[0]);
+          }
+          this.tickets = this.weTrackService.getTickets(this.weTrackService.getSelectedTicketGroup());
           this.currentlyLoadingTickets = false;
           this.sortTickets();
         }
@@ -210,7 +215,7 @@ export class WeTrackListComponent implements OnInit, OnDestroy {
    * @returns {void}
    */
   public deleteTicket(ticket: WeTrackTicket): void {
-    this.weTrackService.deleteTicket(ticket.uniqueId, true);
+    this.weTrackService.deleteTicket(ticket.uniqueId, this.weTrackService.getSelectedTicketGroup(), true);
     this.currentlyLoadingTickets = true;
 
     this.weTrackService.getLoading().pipe(take(2), takeUntil(this.ngUnsubscribe)).subscribe({
@@ -224,7 +229,7 @@ export class WeTrackListComponent implements OnInit, OnDestroy {
   }
 
   public deleteComment(ticket: WeTrackTicket, comment: Comment): void {
-    this.weTrackService.deleteComment(ticket.uniqueId, comment.date, true);
+    this.weTrackService.deleteComment(ticket.uniqueId, this.weTrackService.getSelectedTicketGroup(), comment.date, true);
   }
 
   /**

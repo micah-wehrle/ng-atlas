@@ -11,6 +11,7 @@ export class WeTrackService extends ApiService<WeTrackResponse> {
   protected serverUrl: string = 'http://localhost:3000/we-track';
   protected apiResultsConstructor: new (response: any) => WeTrackResponse = WeTrackResponse;
   private selectedTicketId: number = -1;
+  private selectedTicketGroup: string = '';
 
   constructor(injector: Injector) {
     super('we track', injector);
@@ -37,40 +38,40 @@ export class WeTrackService extends ApiService<WeTrackResponse> {
    * @description Sends a new ticket to the back end to be added to the database
    * @returns {void}
    */
-  public createTicket(ticket: WeTrackTicket): void {
-    this.post('create', ticket);
+  public createTicket(ticket: WeTrackTicket, ticketGroup: string): void {
+    this.post(`create/${ticketGroup}`, ticket);
   }
 
   /**
    * @description Sends a partial ticket to the back end in order to update changes made
    * @returns {void}
    */
-  public updateTicket(partialTicket: Partial<WeTrackTicket>): void {
-    this.post('update', partialTicket);
+  public updateTicket(partialTicket: Partial<WeTrackTicket>, ticketGroup: string): void {
+    this.post(`update/${ticketGroup}`, partialTicket);
   }
   
   /**
    * @description Sends a ticket to the back end in order to change whether or not the ticket is marked as deleted
    * @returns {void}
    */
-  public deleteTicket(ticketId: number, isDeleted: boolean): void {
-    this.post('delete', { ticketId, isDeleted });
+  public deleteTicket(ticketId: number, ticketGroup: string, isDeleted: boolean): void {
+    this.post(`delete/${ticketGroup}`, { ticketId, isDeleted });
   }
 
   /**
    * @description Sends a comment to the back end to be added to a specific ticket
    * @returns {void}
    */
-  public addComment(ticketId: number, comment: Comment): void {
-    this.post('comment', {ticketId, comment});
+  public addComment(ticketId: number, ticketGroup: string, comment: Comment): void {
+    this.post(`comment/${ticketGroup}`, {ticketId, comment});
   }
 
-  public deleteComment(ticketId: number, commentDate: number, isDeleted: boolean): void {
-    this.post('delete-comment', {ticketId, commentDate, isDeleted});
+  public deleteComment(ticketId: number, ticketGroup: string, commentDate: number, isDeleted: boolean): void {
+    this.post(`delete-comment/${ticketGroup}`, {ticketId, commentDate, isDeleted});
   }
 
-  public permanentlyDeleteTicket(ticketId: number): void {
-    this.post('perm-delete', {ticketId});
+  public permanentlyDeleteTicket(ticketId: number, ticketGroup: string): void {
+    this.post(`perm-delete/${ticketGroup}`, {ticketId});
   }
 
 
@@ -79,8 +80,8 @@ export class WeTrackService extends ApiService<WeTrackResponse> {
    * @description Getter for the array of tickets
    * @returns {WeTrackTicket[]} The array of tickets from the back end
    */
-  public getTickets(): WeTrackTicket[] {
-    return this.apiResults.getTickets();
+  public getTickets(ticketGroup: string): WeTrackTicket[] {
+    return this.apiResults.getTickets(ticketGroup);
   }
 
   /**
@@ -99,6 +100,18 @@ export class WeTrackService extends ApiService<WeTrackResponse> {
    */
   public setSelectedTicketId(id: number): void {
     this.selectedTicketId = id;
+  }
+
+  public setSelectedTicketGroup(ticketGroup: string): void {
+    this.selectedTicketGroup = ticketGroup;
+  }
+
+  public getSelectedTicketGroup(): string {
+    return this.selectedTicketGroup;
+  }
+
+  public getTicketGroups(): string[] {
+    return this.apiResults.getGroups();
   }
 
   /**
@@ -121,8 +134,8 @@ export class WeTrackService extends ApiService<WeTrackResponse> {
    * @description Getting for the selected ticket
    * @returns {WeTrackTicket} The selected ticket
    */
-  public getSelectedTicket(): WeTrackTicket {
-    return this.apiResults.getTickets().find(ticket => ticket.uniqueId === this.selectedTicketId);
+  public getSelectedTicket(ticketGroup: string): WeTrackTicket {
+    return this.apiResults.getTickets(ticketGroup).find(ticket => ticket.uniqueId === this.selectedTicketId);
   }
 
   /**
@@ -130,8 +143,8 @@ export class WeTrackService extends ApiService<WeTrackResponse> {
    * @param {WeTrackTicket} changedTicket The ticket to which changes have been made.
    * @returns {Partial<WeTrackTicket>} The partial weTrack ticket, containing only the ID and any values that were changed in the provided changedTicket.
    */
-  public findChangesToSelectedTicket(changedTicket: WeTrackTicket): Partial<WeTrackTicket> {
-    const ticket = this.getSelectedTicket();
+  public findChangesToSelectedTicket(changedTicket: WeTrackTicket, ticketGroup: string): Partial<WeTrackTicket> {
+    const ticket = this.getSelectedTicket(ticketGroup);
     const outputTicket = structuredClone(changedTicket);
     for (let key in ticket) {
       if (key === 'uniqueId') {
@@ -151,11 +164,11 @@ export class WeTrackService extends ApiService<WeTrackResponse> {
    * @param {string} ticketVariable The ticket variable from which a sortable value is needed
    * @returns {number} The sortable "weight" of the given ticket value, to be ranked with other possible ticket values
    */
-  public getSortableValueFromTicket(ticket: number | WeTrackTicket, ticketVariable: string): number {
+  public getSortableValueFromTicket(ticket: number | WeTrackTicket, ticketGroup: string, ticketVariable: string): number {
     if(!ticket) {
       console.error('Error parsing ticket'); // In case the user passes an empty ticket
     }
-    const tickets = this.apiResults.getTickets();
+    const tickets = this.apiResults.getTickets(ticketGroup);
     const ticketToUse: WeTrackTicket = typeof ticket === 'number' ? tickets[ticket] : ticket; // Convert a variable which may be one of two types, into a definite WeTrackTicket type
 
     switch(ticketVariable) { // Depending on the weTrackTicket variable type, extract various values or return numerical "weights" depending on the value of the given variable
