@@ -16,6 +16,7 @@ import { HistorySubviewComponent } from './components/views/job-view/subviews/hi
 import { FacilitiesSubviewComponent } from './components/views/job-view/subviews/facilities-subview/facilities-subview.component';
 import { TestsSubviewComponent } from './components/views/job-view/subviews/tests-subview/tests-subview.component';
 import { WeatherViewComponent } from './components/views/weather-view/weather-view.component';
+import { WeTrackSettingsComponent } from './components/we-track/we-track-settings/we-track-settings.component';
 
 const routes: Routes = [
   { path: '', component: HomepageComponent, pathMatch: 'full' },
@@ -36,7 +37,8 @@ const routes: Routes = [
   { path: 'we-track', component: WeTrackComponent, children: [
     { path: '', component: WeTrackListComponent },
     { path: 'new', component: WeTrackEditComponent },
-    { path: 'edit', component: WeTrackEditComponent }
+    { path: 'edit', component: WeTrackEditComponent },
+    { path: 'settings', component: WeTrackSettingsComponent },
   ]},
 ];
 

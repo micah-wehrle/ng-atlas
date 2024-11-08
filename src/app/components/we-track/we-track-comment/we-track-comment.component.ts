@@ -22,9 +22,9 @@ export class WeTrackCommentComponent implements OnInit {
   ngOnInit(): void {
     // Calculate time since comment was posted, and display as fancy text
     const startDate: Date = this.comment && this.comment.date ? 
-      typeof this.comment.date === 'string' ? new Date(this.comment.date) : this.comment.date : // Ensure comment.date is of the correct type
+      new Date(this.comment.date) : // Ensure comment.date is of the correct type
       new Date(); // default to today if comment or comment.date doesn't exist
-    this.timeSinceComment += this.createFancyTimeBetween(typeof this.comment.date === 'string' ? new Date(this.comment.date) : this.comment.date);
+    this.timeSinceComment += this.createFancyTimeBetween(startDate);
   }
 
   /**

@@ -1,0 +1,14 @@
+<ng-container *ngIf="listData?.topText">
+  <h6>{{ listData?.topText }}</h6>
+</ng-container>
+<div class="list-group mb-2">
+  <ng-container *ngFor="let element of listData?.listElements; let i = index">
+    <!-- TODO: clean this styling up -->
+    <div class="list-group-item" [ngClass]="{'active': selectedElements[i]}" [style]="{'border-color': 'lightgray', 'color': (element.text && element.text.trim().length > 0 ? 'black' : 'gray'), 'font-style': (element.text && element.text.trim().length > 0 ? '' : 'italic')}" (click)="onSelectElement(i)"> {{ element.text && element.text.trim().length > 0 ? element.text : '(No Title)' }} </div>
+  </ng-container>
+</div>
+<ng-container *ngFor="let button of listData?.buttons">
+  <div class="mt-4 d-inline-flex">
+    <button [class]="['btn', button.bootstrapButtonClass, 'me-2', 'mb-2']" (click)="onButtonClicked(button.text)" [disabled]="!buttonsEnabled"> {{ button.text }} </button>
+  </div>
+</ng-container>

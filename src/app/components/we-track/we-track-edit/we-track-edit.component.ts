@@ -1,6 +1,7 @@
 import { Component, OnInit } from '@angular/core';
-import { AbstractControl, FormControl, FormGroup, ValidationErrors, ValidatorFn, Validators } from '@angular/forms';
+import { AbstractControl, FormArray, FormControl, FormGroup, ValidationErrors, ValidatorFn, Validators } from '@angular/forms';
 import { Router } from '@angular/router';
+import { take } from 'rxjs';
 
 import { WeTrackTicket } from 'src/app/models/we-track-ticket.model';
 import { WeTrackService } from 'src/app/services/we-track.service';
@@ -21,6 +22,9 @@ export class WeTrackEditComponent implements OnInit {
     'importance': new FormControl('low', Validators.required),
     'submitter': new FormControl('', Validators.required),
     'description': new FormControl('', Validators.required),
+    'ticketGroup': new FormControl(this.weTrackService.getSelectedTicketGroup()),
+    'newTicketGroupName': new FormControl(''),
+    'repos': new FormArray([]),
     'isAssignedGroup': new FormGroup(
       {
         'isAssigned': new FormControl(false), // checkbox to show nested forms
@@ -51,18 +55,32 @@ export class WeTrackEditComponent implements OnInit {
     ),
   });
 
-  constructor(private router: Router, private weTrackService: WeTrackService) { }
+  public ticketGroups: string[] = this.weTrackService.getTicketGroups();
+
+  constructor(private router: Router, private weTrackService: WeTrackService) { 
+    // this.weTrackForm.
+  }
 
   ngOnInit(): void {
     if(this.router.url === '/we-track/edit') {  
       this.isEditing = true;
-      if(this.weTrackService.selectedTicket === -1) {
+      if(this.weTrackService.getSelectedTicketId() === -1) {
         // if the user navigates directly to the edit page, will redirect to the new page
         this.router.navigate(['we-track','new']);
       }
       else { // If the user is on the edit page, and has a ticket selected in the weTrackService..
-        const selTicket: WeTrackTicket = this.weTrackService.getTicket(this.weTrackService.selectedTicket); // retrieve the selected ticket from weTrackService
+        const selTicket: WeTrackTicket = this.weTrackService.getSelectedTicket(this.weTrackService.getSelectedTicketGroup()); // retrieve the selected ticket from weTrackService
         
+        // Patch in repo data
+        if (Array.isArray(selTicket.repoData) && selTicket.repoData.length > 0) {
+          for (let repo of selTicket.repoData) {
+            const repoGroup = this.createEmptyRepoFormGroup();
+            repoGroup.controls['url'].patchValue(repo.url);
+            repoGroup.controls['branch'].patchValue(repo.branch);
+            this.repos.push(repoGroup);
+          }
+        }
+
         this.weTrackForm.patchValue(selTicket ? { // update all the values of the FormGroup to the data retrieved from selected ticket
           'title': selTicket.title ? selTicket.title : '',
           'type': selTicket.type ? selTicket.type : '',
@@ -78,13 +96,46 @@ export class WeTrackEditComponent implements OnInit {
             'isCustomCreation': true, // will always be true since we are editing a pre-existing ticket
             'customCreationDate': selTicket.creationDate ? new Date(selTicket.creationDate).toISOString().substring(0,10) : '', // Ideally shouldn't be non truthy since we're editing a pre-existing ticket, but just in case 
           },
-          'customEditGroup': {
-            'isCustomEdit': selTicket.editDate && (selTicket.creationDate && selTicket.creationDate !== selTicket.editDate) ? true : false,
-            'customEditDate': selTicket.editDate ? new Date(selTicket.editDate).toISOString().substring(0,10) : '',
-          }
         } : {} ); // if selTicket isn't truthy, don't patch anything.
       }
     }
+  }
+
+  get getAddNewGroupSelected(): boolean {
+    return this.weTrackForm.get('ticketGroup').value === 'add-new';
+  }
+
+  get repos(): FormArray {
+    return this.weTrackForm.get('repos') as FormArray;
+  }
+
+  public repoFormsAreValid(): boolean {
+    for (let repo of this.repos.controls) {
+      if (repo.status !== 'VALID') {
+        return false;
+      }
+    }
+
+    return true;
+  }
+
+  private createEmptyRepoFormGroup(): FormGroup {
+    return new FormGroup({
+      'url': new FormControl('', [Validators.required, Validators.pattern(/^(https:\/\/)?(www\.)?github\.com\/.+\/.+$/i)]),
+      'branch': new FormControl('')
+    })
+  }
+
+  public onAddRepoForm(): void {
+    if (!this.repoFormsAreValid()) {
+      return;
+    }
+
+    this.repos.push(this.createEmptyRepoFormGroup());
+  }
+
+  public onRemoveRepo(index: number): void {
+    this.repos.removeAt(index);
   }
 
   /**
@@ -98,14 +149,26 @@ export class WeTrackEditComponent implements OnInit {
     const description = this.weTrackForm.get('description');
     const importance = this.weTrackForm.get('importance');
     const submitter = this.weTrackForm.get('submitter');
+    const ticketGroup = this.getAddNewGroupSelected ? this.weTrackForm.get('newTicketGroupName') : this.weTrackForm.get('ticketGroup');
 
+    // TODO: Look into double elvis or double pipe!
     let tempTicket: WeTrackTicket = new WeTrackTicket(
+      this.isEditing ? this.weTrackService.getSelectedTicketId() : new Date().getTime(),
       title && title.value ? title.value : '',
       type && type.value ? type.value : '',
       description && description.value ? description.value : '',
       importance && importance.value ? importance.value : '',
       submitter && submitter.value ? submitter.value : '',
     );
+
+    tempTicket.repoData = (this.repos.controls as FormGroup[]).map(repo => {
+      let url = repo.controls['url'].value;
+      
+      if (url.substring(0,8) !== 'https://') {
+        url = 'https://' + url;
+      }
+      return {url, branch: repo.controls['branch'].value};
+    })
     
     // If the isAssigned box is checked, insert assignment data into tempTicket 
     if(this.weTrackForm.get('isAssignedGroup.isAssigned')?.value) {
@@ -129,23 +192,29 @@ export class WeTrackEditComponent implements OnInit {
 
       tempTicket.editDate = new Date('' + customEditDate);
     }
-    
-    const afterTicketSubmissionCallback: Function = () => { // clear the selected ticket and go back to the ticket page
-      this.weTrackService.selectedTicket = -1; 
-      this.router.navigate(['we-track']);
-    };
 
-    // If user is in editing page, send the ticket to the weTrackService so it can replace the current ticket
-    if(this.isEditing) {
-      tempTicket.comments = this.weTrackService.getTicket(this.weTrackService.selectedTicket)?.comments // Comments will only exist if this was edited
-      this.weTrackService.updateTicket(tempTicket, this.weTrackService.selectedTicket)
-        .then( afterTicketSubmissionCallback() ); // Once the ticket is updated in the database
+    if (this.isEditing) { 
+      tempTicket.comments = this.weTrackService.getSelectedTicket(this.weTrackService.getSelectedTicketGroup())?.comments // Comments will only exist if this was edited
+      const outputTicket: Partial<WeTrackTicket> = this.weTrackService.findChangesToSelectedTicket(tempTicket, this.weTrackService.getSelectedTicketGroup());
+      console.log(outputTicket, ticketGroup.value);
+      this.weTrackService.updateTicket(outputTicket, ticketGroup.value);
     }
-    else { // If we're creating a new ticket, simply send the ticket to be added to the database
-      this.weTrackService.addNewTicket(tempTicket)
-        .then( afterTicketSubmissionCallback() ); // Once the ticket is added to the database
+    else {
+      this.weTrackService.createTicket(tempTicket, ticketGroup.value);
     }
 
+    this.subscribeToWeTrackService();
+  }
+
+  private subscribeToWeTrackService(): void {
+    this.weTrackService.getLoading().pipe(take(2)).subscribe({
+      next: loading => {
+        if (!loading && this.weTrackService.hasSuccessfullyCompleted()) {
+          this.weTrackService.deselectTicket();
+          this.router.navigate(['we-track']);
+        }
+      }
+    });
   }
   
   // Do we want to add a site-wide back arrow with breadcrumbs? -Micah

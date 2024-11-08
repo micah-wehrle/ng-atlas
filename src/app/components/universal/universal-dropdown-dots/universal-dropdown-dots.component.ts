@@ -10,6 +10,7 @@ export class UniversalDropdownDotsComponent implements OnInit {
    * @description Pass in an array of objects containing the dropdown text and callback function to be triggered when the dropdown list item is clicked.
    */
   @Input() dropdownContents: string[];
+  @Input() disabled: boolean = false;
   @Output() optionClicked: EventEmitter<string> = new EventEmitter<string>();
 
   public expandDropdown: boolean = false;

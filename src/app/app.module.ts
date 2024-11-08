@@ -36,6 +36,9 @@ import { TestsSubviewComponent } from './components/views/job-view/subviews/test
 import { UniversalFacilitiesCardComponent } from './components/universal/universal-facilities-card/universal-facilities-card.component';
 import { WeatherViewComponent } from './components/views/weather-view/weather-view.component';
 import { SidebarListComponent } from './components/header/sidebar-list/sidebar-list.component';
+import { WeTrackSettingsComponent } from './components/we-track/we-track-settings/we-track-settings.component';
+import { UniversalExpandableCardComponent } from './components/universal/universal-expandable-card/universal-expandable-card.component';
+import { UniversalSelectionListComponent } from './components/universal/universal-selection-list/universal-selection-list.component';
 
 @NgModule({
   declarations: [
@@ -69,7 +72,10 @@ import { SidebarListComponent } from './components/header/sidebar-list/sidebar-l
     TestsSubviewComponent,
     UniversalFacilitiesCardComponent,
     WeatherViewComponent,
-    SidebarListComponent
+    SidebarListComponent,
+    WeTrackSettingsComponent,
+    UniversalExpandableCardComponent,
+    UniversalSelectionListComponent
   ],
   imports: [
     BrowserModule,

@@ -1,7 +1,8 @@
 import { Component, EventEmitter, Input, OnInit, Output } from '@angular/core';
 import { Router } from '@angular/router';
+import { take } from 'rxjs';
 
-import { WeTrackTicket } from 'src/app/models/we-track-ticket.model';
+import { Comment, RepoData, WeTrackTicket } from 'src/app/models/we-track-ticket.model';
 import { WeTrackService } from 'src/app/services/we-track.service';
 
 @Component({
@@ -15,13 +16,17 @@ export class WeTrackItemComponent implements OnInit {
   @Input() weTrackTicket: WeTrackTicket;
   // Emission to we-track-list when the user wants to delete this ticket from the database.
   @Output() deleteThisTicket: EventEmitter<void> = new EventEmitter<void>(); // An alternative to this would be to have the ticket delete itself from the database. However, this would require all of the places that use the master ticket array to subscribe to the service in order to be notified when the master list changes. -Micah
-  
+  @Output() deleteThisTicketComment: EventEmitter<Comment> = new EventEmitter<Comment>();
+  @Output() refreshPlease: EventEmitter<void> = new EventEmitter<void>(); // TODO: replace with dynamic emitter
+
   public isActive: boolean = false; // When the ticket is open in the list, showing the full description and all data
   public statusColor: string = ''; // For use with the stylized dot class next to the ticket status. See global style sheet for class info
   public prettyCreationDate: string = ''; // Shows creation date in MM-DD-YYYY format
 
   public commentName: string = ''; // Form data from commenter name (may be replaced if we move to login-based interaction)
   public commentText: string = ''; // Form data for comment text
+
+  public comments: Comment[] = [];
 
   public ellipsesStyleWrap: object = { // for ngStyle use on the description, to hide overflow when the ticket is collapsed. 
     'text-overflow': 'ellipsis', // Where should this go? Entirely in the HTML? Maybe create a class? -Micah
@@ -43,6 +48,10 @@ export class WeTrackItemComponent implements OnInit {
     let tempPrettyDate = new Date(this.weTrackTicket.creationDate).toISOString().slice(0,10); // Convert Date string to MM-DD-YYY
     this.prettyCreationDate = tempPrettyDate.slice(5,10) + '-' + tempPrettyDate.slice(0,4);
     this.prettyCreationDate = `${tempPrettyDate.slice(5,10)}-${tempPrettyDate.slice(0,4)}`;
+
+    for (let key in this.weTrackTicket.comments) {
+      this.comments.push(this.weTrackTicket.comments[key]);
+    }
   }
   
   /**
@@ -52,7 +61,7 @@ export class WeTrackItemComponent implements OnInit {
   public onTicketDropdownOptionsClicked(optionClicked: string): void {
     switch(optionClicked) {
       case this.staticTicketDropdownOptions.EDIT:
-        this.weTrackService.selectedTicket = this.weTrackService.getIndexOfTicket(this.weTrackTicket);
+        this.weTrackService.setSelectedTicket(this.weTrackTicket);
         this.router.navigate(['we-track','edit']);
         break;
       case this.staticTicketDropdownOptions.DELETE:
@@ -115,38 +124,63 @@ export class WeTrackItemComponent implements OnInit {
    * @description When the user clicks comment, will prepare the comment, add it to the current ticket, and attempt to send it to the database.
    */
   public onSubmitComment(): void {
-    
-    if(this.commentName.trim() === '' || this.commentText.trim() === '') { return; }
-    let updatedTicketPayload = {...this.weTrackTicket};
-    if(!Array.isArray(updatedTicketPayload.comments) || updatedTicketPayload.comments.length === 0) {
-      updatedTicketPayload.comments = [{name: this.commentName, comment: this.commentText, date: new Date()}];
-    }
-    else {
-      updatedTicketPayload.comments.push({name: this.commentName, comment: this.commentText, date: new Date()});
-    }
-    this.commentText = '';
 
-    this.weTrackService.updateTicket(updatedTicketPayload, this.weTrackTicketIndex)
-      .then(() => {
-        this.weTrackTicket = updatedTicketPayload;
-      });
+    if(this.commentName.trim() === '' || this.commentText.trim() === '') { return; }
+
+    // TODO: change this to be something handled by the weTrack list, instead of in each component. Perhaps have a different emission system with different types, but just one emitter instead of an emitter for everything.
+    this.weTrackService.addComment(this.weTrackTicket.uniqueId, this.weTrackService.getSelectedTicketGroup(), {
+      name: (()=>{
+        let name = this.commentName.trim();
+        if (name.toLowerCase() === 'brandon') {
+          if (Math.random() < 0.05) {
+            return name.substring(0,6); // ;)
+          }
+        }
+        return name;
+      })(),
+      comment: this.commentText.trim(),
+      date: new Date().getTime(),
+      reply: []
+    });
+
+    this.weTrackService.getLoading().pipe(take(2)).subscribe({
+      next: (loading: boolean) => {
+        if (!loading && this.weTrackService.hasSuccessfullyCompleted()) {
+          this.refreshPlease.next();
+        }
+      }
+    })
   }
 
   /**
    * @description Will remove the comment from the ticket, and attempt to send the updated data to the database.
-   * @param {number} index The index of the comment, as given by the ngFor loop
+   * @param {Comment} comment The comment being deleted
    */
-  public deleteComment(index: number): void {
-    let updatedTicketPayload = {...this.weTrackTicket};
-    updatedTicketPayload.comments.splice(index, 1);
-
-    this.weTrackService.updateTicket(updatedTicketPayload, this.weTrackTicketIndex)
-      .then(() => {
-        this.weTrackTicket = updatedTicketPayload;
-      });
+  public deleteComment(comment: Comment): void {
+    this.deleteThisTicketComment.next(comment);
   }
 
   public stopPropagation(event: Event): void {
     event.stopPropagation();
+  }
+
+  public trimUrlToRepo(url: string): string {
+    const parts = url.split('/');
+    let output: string;
+    do {
+      output = parts.pop().trim();
+    }
+    while(output === '' && parts.length > 0);
+
+    return output;
+  }
+
+  public buildBranchUrl(repo: RepoData): string {
+    let repoUrl = repo.url;
+    if (repoUrl[repoUrl.length-1] !== '/') {
+      repoUrl += '/';
+    }
+
+    return `${repoUrl}tree/${repo.branch}`;
   }
 }

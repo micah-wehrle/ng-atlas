@@ -1,0 +1,36 @@
+<div class="container">
+  <button type="button" class="btn btn-secondary mb-1" (click)="onGoBack()">&lt; Back</button>&nbsp;
+  <div class="row mt-2">
+    <app-universal-expandable-card [headerData]="headerData">
+      <!-- Internal HTML for the expandable card  -->
+      <ng-container *ngIf="!isLoadingDeletedTickets; else loading">
+        <ng-container *ngIf="getIfThereAreDeletedTickets(); else noTickets">
+          <app-universal-selection-list [listData]="deletedTicketData" (buttonClicked)="onDeletedListButtonPressed($event)" (selectionChanged)="onDeletedListChanged($event)"></app-universal-selection-list>
+        </ng-container>
+        <ng-template #noTickets>
+          <div class="deleted-ticket-note">No Deleted Tickets.</div>
+        </ng-template>
+      </ng-container>
+      <ng-template #loading>
+        <div class="deleted-ticket-note">Loading . . .</div>
+      </ng-template>
+    </app-universal-expandable-card>
+    <ng-container *ngIf="ticketToPreview !== -1 && deletedTickets && deletedTickets[ticketToPreview]">
+      <div class="container mt-2">
+        <div class="card">
+          <div class="card-header">
+            <h3>Ticket Info:</h3>
+          </div>
+          <div class="card-body">
+            <h4>{{deletedTickets[ticketToPreview].title}}</h4>
+            <h6>Created by: {{deletedTickets[ticketToPreview].submitter}}</h6>
+            <p>{{deletedTickets[ticketToPreview].description}}</p>
+            <!-- <p>{{deletedTickets[ticketToPreview]}}</p>
+            <p>{{deletedTickets[ticketToPreview]}}</p>
+            <p>{{deletedTickets[ticketToPreview]}}</p> -->
+          </div>
+        </div>
+      </div>
+    </ng-container>
+  </div>
+</div>
