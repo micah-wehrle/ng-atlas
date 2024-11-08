@@ -111,7 +111,7 @@ export class WeTrackService extends ApiService<WeTrackResponse> {
   }
 
   public getTicketGroups(): string[] {
-    return this.apiResults.getGroups();
+    return this.apiResults?.getGroups();
   }
 
   /**

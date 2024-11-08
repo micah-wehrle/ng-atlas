@@ -42,7 +42,7 @@ export class WeTrackListComponent implements OnInit, OnDestroy {
   }
   
   public sortingDropdownOptions: string[] = Object.values(this.staticSortingDropdownOptions); // An array of all sorting options, as pulled from the static array so that everything always matches.
-  public selectedSorting: string = this.staticSortingDropdownOptions.DATE; // Default sorting start, set to date.
+  public selectedSorting: string = this.staticSortingDropdownOptions.EDIT_DATE; // Default sorting start, set to date.
   public currentlyLoadingTickets: boolean = true; // For hiding the main list in the DOM and instead showing a loading indicator. By default, nothing is loaded, so loading = true
 
   constructor(private weTrackService: WeTrackService, private router: Router) {}
@@ -54,6 +54,20 @@ export class WeTrackListComponent implements OnInit, OnDestroy {
   ngOnDestroy(): void {
     this.ngUnsubscribe.next();
     this.ngUnsubscribe.complete();
+  }
+
+  get getSelectedTicketGroup(): string {
+    return this.weTrackService.getSelectedTicketGroup();
+  }
+
+  get getTicketGroups(): string[] {
+    return this.weTrackService.getTicketGroups();
+  }
+
+  public onSwitchTicketGroup(group: string): void {
+    this.weTrackService.setSelectedTicketGroup(group);
+    this.tickets = this.weTrackService.getTickets(this.weTrackService.getSelectedTicketGroup());
+    this.sortTickets();
   }
 
   // -----    Ticket Sorting    -----

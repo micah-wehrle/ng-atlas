@@ -22,6 +22,8 @@ export class WeTrackEditComponent implements OnInit {
     'importance': new FormControl('low', Validators.required),
     'submitter': new FormControl('', Validators.required),
     'description': new FormControl('', Validators.required),
+    'ticketGroup': new FormControl(this.weTrackService.getSelectedTicketGroup()),
+    'newTicketGroupName': new FormControl(''),
     'repos': new FormArray([]),
     'isAssignedGroup': new FormGroup(
       {
@@ -52,6 +54,8 @@ export class WeTrackEditComponent implements OnInit {
       ]
     ),
   });
+
+  public ticketGroups: string[] = this.weTrackService.getTicketGroups();
 
   constructor(private router: Router, private weTrackService: WeTrackService) { 
     // this.weTrackForm.
@@ -95,6 +99,10 @@ export class WeTrackEditComponent implements OnInit {
         } : {} ); // if selTicket isn't truthy, don't patch anything.
       }
     }
+  }
+
+  get getAddNewGroupSelected(): boolean {
+    return this.weTrackForm.get('ticketGroup').value === 'add-new';
   }
 
   get repos(): FormArray {
@@ -141,6 +149,7 @@ export class WeTrackEditComponent implements OnInit {
     const description = this.weTrackForm.get('description');
     const importance = this.weTrackForm.get('importance');
     const submitter = this.weTrackForm.get('submitter');
+    const ticketGroup = this.getAddNewGroupSelected ? this.weTrackForm.get('newTicketGroupName') : this.weTrackForm.get('ticketGroup');
 
     // TODO: Look into double elvis or double pipe!
     let tempTicket: WeTrackTicket = new WeTrackTicket(
@@ -187,10 +196,11 @@ export class WeTrackEditComponent implements OnInit {
     if (this.isEditing) { 
       tempTicket.comments = this.weTrackService.getSelectedTicket(this.weTrackService.getSelectedTicketGroup())?.comments // Comments will only exist if this was edited
       const outputTicket: Partial<WeTrackTicket> = this.weTrackService.findChangesToSelectedTicket(tempTicket, this.weTrackService.getSelectedTicketGroup());
-      this.weTrackService.updateTicket(outputTicket, this.weTrackService.getSelectedTicketGroup());
+      console.log(outputTicket, ticketGroup.value);
+      this.weTrackService.updateTicket(outputTicket, ticketGroup.value);
     }
     else {
-      this.weTrackService.createTicket(tempTicket, this.weTrackService.getSelectedTicketGroup());
+      this.weTrackService.createTicket(tempTicket, ticketGroup.value);
     }
 
     this.subscribeToWeTrackService();

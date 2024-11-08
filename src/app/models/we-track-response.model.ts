@@ -42,6 +42,9 @@ export class WeTrackResponse extends ApiResponseModel {
   }
 
   public getGroups(): string[] {
+    if (!this.ticketGroups) {
+      return [];
+    }
     return Object.keys(this.ticketGroups);
   }
 
